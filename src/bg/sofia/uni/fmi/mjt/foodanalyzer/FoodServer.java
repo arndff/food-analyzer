@@ -30,7 +30,7 @@ public class FoodServer {
     private static ConcurrentMap<String, Product> foodByUpcCache;
 
     private static File setupFilePath(String path) {
-        // if the folder and the file have already existed, they won't be created once again
+        // if the folder and the file already exist, they won't be created once again
         File folder = new File(path.substring(0, path.indexOf('/')));
         folder.mkdir();
         File file = new File(path);
