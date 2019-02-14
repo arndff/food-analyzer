@@ -192,8 +192,6 @@ public class ClientRequestHandler implements Runnable {
 
     private String getFoodByNdbno(String ndbno) {
         if(foodByNdboCache.containsKey(ndbno)) {
-            System.out.println("Printing from if..........");
-
             return foodByNdboCache.get(ndbno).toString();
         }
 
