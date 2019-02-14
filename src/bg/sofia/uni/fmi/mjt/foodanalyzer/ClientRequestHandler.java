@@ -268,7 +268,6 @@ public class ClientRequestHandler implements Runnable {
 
     private String getFoodByBarcode(String arg, boolean isPathToImg) {
         String barcode;
-
         barcode = (isPathToImg) ? decodeBarcode(arg) : arg;
 
         if(barcode != null) {

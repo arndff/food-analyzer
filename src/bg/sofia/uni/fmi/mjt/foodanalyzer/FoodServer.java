@@ -135,7 +135,9 @@ public class FoodServer {
                 // Want each client to be processed in a separate thread
                 // to keep the current thread free to accept() requests from new clients
                 ClientRequestHandler clientHandler = new ClientRequestHandler(clientSocket,
-                        foodByNameCache, foodByNdbnoCache, foodByUpcCache);
+                                                                              foodByNameCache,
+                                                                              foodByNdbnoCache,
+                                                                              foodByUpcCache);
 
                 executor.execute(clientHandler);
             }
