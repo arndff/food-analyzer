@@ -263,10 +263,18 @@ public class ClientRequestHandler implements Runnable {
     private String getFoodByBarcode(String arg, boolean isPathToImg) {
         String barcode;
 
+        System.out.println("arg " + arg);
+
         barcode = (isPathToImg) ? decodeBarcode(arg) : arg;
 
-        if (foodByUpcCache.containsKey(barcode)) {
-            return foodByUpcCache.get(barcode).toString();
+        System.out.println("barcode " + barcode);
+
+        if(barcode != null) {
+            if (foodByUpcCache.containsKey(barcode)) {
+                return foodByUpcCache.get(barcode).toString();
+            }
+        } else {
+            return "Invalid upc or image path.";
         }
 
         return "No product with this barcode=" + barcode + " has been found.";
