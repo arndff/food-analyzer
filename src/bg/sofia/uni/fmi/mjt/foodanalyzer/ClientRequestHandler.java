@@ -190,12 +190,14 @@ public class ClientRequestHandler implements Runnable {
                         .get("value").getAsDouble();
     }
 
-    private String getFoodByNdbno(String ndbNo) {
-        if(foodByNdboCache.containsKey(ndbNo)) {
-            return foodByNdboCache.get(ndbNo).toString();
+    private String getFoodByNdbno(String ndbno) {
+        if(foodByNdboCache.containsKey(ndbno)) {
+            System.out.println("Printing from if..........");
+
+            return foodByNdboCache.get(ndbno).toString();
         }
 
-        String url = "https://api.nal.usda.gov/ndb/V2/reports?ndbno=" + ndbNo + "&format=json&api_key=" + apiKey;
+        String url = "https://api.nal.usda.gov/ndb/V2/reports?ndbno=" + ndbno + "&format=json&api_key=" + apiKey;
 
         try {
             JsonObject response = urlResponseToJson(url);
@@ -219,11 +221,11 @@ public class ClientRequestHandler implements Runnable {
 
             Report report = new Report(name, ingredients, kcal, protein, fat, carbohydrate, fiber);
 
-            foodByNdboCache.put(name, report);
+            foodByNdboCache.put(ndbno, report);
 
             return report.toString();
         } catch(NullPointerException e) {
-            return "No information found for ndbno " + ndbNo + ".";
+            return "No information found for ndbno " + ndbno + ".";
         } catch(IOException | InterruptedException e) {
             e.printStackTrace();
         }
