@@ -14,18 +14,18 @@ public class Product {
         this.name = name;
         this.ndbno = Integer.parseInt(ndbno);
         this.manu = manu;
-        this.setNameAndUpc();
+        setNameAndUpc();
     }
 
     public String getUpc() {
-        return this.upc;
+        return upc;
     }
 
     public void setNameAndUpc() {
-        if(this.group.equals("Branded Food Products Database")) {
-            String[] splittedName = this.name.split(", UPC: ");
-            this.setName(splittedName[0]);
-            this.setUpc(splittedName[1]);
+        if("Branded Food Products Database".equals(group)) {
+            String[] splittedName = name.split(", UPC: ");
+            setName(splittedName[0]);
+            setUpc(splittedName[1]);
         }
     }
 
@@ -39,13 +39,13 @@ public class Product {
 
     @Override
     public String toString() {
-        String result = "[Product's name: " + name + ", ndbno: " + this.ndbno;
+        String result = "[Product's name: " + name + ", ndbno: " + ndbno;
 
-        if (this.upc != null) {
-            result += ", upc: " + this.upc;
+        if (upc != null) {
+            result += ", upc: " + upc;
 
             if (!this.manu.equals("none")) {
-                result += ", manu: " + this.manu;
+                result += ", manu: " + manu;
             }
         }
 

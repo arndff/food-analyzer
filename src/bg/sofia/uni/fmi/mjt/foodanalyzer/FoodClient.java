@@ -24,7 +24,7 @@ public class FoodClient {
 
                 String message = sc.nextLine(); // read a line from the console
 
-                if(message.equals("quit")) {
+                if("quit".equals(message)) {
                     System.out.println("Closing your session...");
                     break;
                 }
