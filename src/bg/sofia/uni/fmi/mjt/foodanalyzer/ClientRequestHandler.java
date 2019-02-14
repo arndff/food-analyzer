@@ -193,10 +193,10 @@ public class ClientRequestHandler implements Runnable {
 
     private Report createReportObject(JsonObject food) {
         String name = food.get("desc").getAsJsonObject()
-                .get("name").getAsString().split(", U")[0];
+                          .get("name").getAsString().split(", U")[0];
 
         String ingredients = food.get("ing").getAsJsonObject()
-                .get("desc").getAsString();
+                                 .get("desc").getAsString();
 
         JsonArray nutrients = food.get("nutrients").getAsJsonArray();
         double kcal = extractSpecificNutrient(nutrients, 0);
@@ -256,8 +256,10 @@ public class ClientRequestHandler implements Runnable {
             return null;
 
         UPCAReader reader = new UPCAReader();
+
         try {
             result = reader.decode(bitmap);
+
             return result.getText();
         } catch (NotFoundException | FormatException e) {
             e.printStackTrace();
