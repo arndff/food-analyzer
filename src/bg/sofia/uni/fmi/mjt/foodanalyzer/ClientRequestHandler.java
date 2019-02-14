@@ -27,7 +27,7 @@ public class ClientRequestHandler implements Runnable {
     private String apiKey = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
 
     private final ConcurrentMap<String, List<Product>> foodByNameCache;
-    private final ConcurrentMap<String, Report> foodByNdboCache;
+    private final ConcurrentMap<String, Report> foodByNdbnoCache;
     private final ConcurrentMap<String, Product> foodByUpcCache;
 
     public ClientRequestHandler(Socket socket,
@@ -38,7 +38,7 @@ public class ClientRequestHandler implements Runnable {
         // this.apiKey = apiKey;
 
         this.foodByNameCache = foodByNameCache;
-        this.foodByNdboCache = foodByNdbnoCache;
+        this.foodByNdbnoCache = foodByNdbnoCache;
         this.foodByUpcCache = foodByUpcCache;
     }
 
@@ -115,7 +115,7 @@ public class ClientRequestHandler implements Runnable {
 
                     return getFoodByBarcode(arg, isPathToImg);
                 } else {
-                    return "Get food by barcode was called with invalid argument.";
+                    return "Get food by barcode was called with an invalid argument(s).";
                 }
 
             default:
@@ -165,11 +165,12 @@ public class ClientRequestHandler implements Runnable {
                 allProducts.append(";");
             }
 
+            // Updating foodByNameCache
             foodByNameCache.put(name, products);
 
+            // Updating foodByUpcCache
             for(Product product : products) {
                 if(product.getUpc() != null) {
-                    System.out.println(product);
                     foodByUpcCache.put(product.getUpc(), product);
                 }
             }
@@ -190,9 +191,26 @@ public class ClientRequestHandler implements Runnable {
                         .get("value").getAsDouble();
     }
 
+    private Report createReportObject(JsonObject food) {
+        String name = food.get("desc").getAsJsonObject()
+                .get("name").getAsString().split(", U")[0];
+
+        String ingredients = food.get("ing").getAsJsonObject()
+                .get("desc").getAsString();
+
+        JsonArray nutrients = food.get("nutrients").getAsJsonArray();
+        double kcal = extractSpecificNutrient(nutrients, 0);
+        double protein = extractSpecificNutrient(nutrients, 1);
+        double fat = extractSpecificNutrient(nutrients, 2);
+        double carbohydrate = extractSpecificNutrient(nutrients, 3);
+        double fiber = extractSpecificNutrient(nutrients, 4);
+
+        return new Report(name, ingredients, kcal, protein, fat, carbohydrate, fiber);
+    }
+
     private String getFoodByNdbno(String ndbno) {
-        if(foodByNdboCache.containsKey(ndbno)) {
-            return foodByNdboCache.get(ndbno).toString();
+        if(foodByNdbnoCache.containsKey(ndbno)) {
+            return foodByNdbnoCache.get(ndbno).toString();
         }
 
         String url = "https://api.nal.usda.gov/ndb/V2/reports?ndbno=" + ndbno + "&format=json&api_key=" + apiKey;
@@ -204,22 +222,10 @@ public class ClientRequestHandler implements Runnable {
                                       .get(0).getAsJsonObject()
                                       .get("food").getAsJsonObject();
 
-            String name = food.get("desc").getAsJsonObject()
-                              .get("name").getAsString().split(", U")[0];
+            Report report = createReportObject(food);
 
-            String ingredients = food.get("ing").getAsJsonObject()
-                                     .get("desc").getAsString();
-
-            JsonArray nutrients = food.get("nutrients").getAsJsonArray();
-            double kcal = extractSpecificNutrient(nutrients, 0);
-            double protein = extractSpecificNutrient(nutrients, 1);
-            double fat = extractSpecificNutrient(nutrients, 2);
-            double carbohydrate = extractSpecificNutrient(nutrients, 3);
-            double fiber = extractSpecificNutrient(nutrients, 4);
-
-            Report report = new Report(name, ingredients, kcal, protein, fat, carbohydrate, fiber);
-
-            foodByNdboCache.put(ndbno, report);
+            // Updating foodByNdbnoCache
+            foodByNdbnoCache.put(ndbno, report);
 
             return report.toString();
         } catch(NullPointerException e) {
@@ -263,11 +269,7 @@ public class ClientRequestHandler implements Runnable {
     private String getFoodByBarcode(String arg, boolean isPathToImg) {
         String barcode;
 
-        System.out.println("arg " + arg);
-
         barcode = (isPathToImg) ? decodeBarcode(arg) : arg;
-
-        System.out.println("barcode " + barcode);
 
         if(barcode != null) {
             if (foodByUpcCache.containsKey(barcode)) {
