@@ -252,14 +252,14 @@ public class ClientRequestHandler implements Runnable {
             e.printStackTrace();
         }
 
-        if (bitmap == null)
+        if (bitmap == null) {
             return null;
+        }
 
         UPCAReader reader = new UPCAReader();
 
         try {
             result = reader.decode(bitmap);
-
             return result.getText();
         } catch (NotFoundException | FormatException e) {
             e.printStackTrace();
