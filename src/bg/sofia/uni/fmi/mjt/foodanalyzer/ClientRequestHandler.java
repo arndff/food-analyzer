@@ -73,7 +73,7 @@ public class ClientRequestHandler implements Runnable {
 
     private String validateUserInput(String[] userInput) {
         if(userInput.length != 2) {
-            return "A query must have a type and an argument.";
+            return "A query must have exactly 2 arguments: a type and an argument.";
         }
 
         String queryType = userInput[0];
@@ -185,7 +185,7 @@ public class ClientRequestHandler implements Runnable {
         return null;
     }
 
-    // helper method which is used in getFoodByNdbno to set some of Report's object data members
+    // helper method which is used in createReportObject to set some of Report's object data members
     private double extractSpecificNutrient(JsonArray nutrients, int index) {
         return nutrients.get(index).getAsJsonObject()
                         .get("value").getAsDouble();
