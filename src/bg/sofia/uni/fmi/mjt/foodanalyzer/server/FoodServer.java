@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.foodanalyzer;
+package bg.sofia.uni.fmi.mjt.foodanalyzer.server;
 
 import bg.sofia.uni.fmi.mjt.foodanalyzer.dto.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.dto.Report;

@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.foodanalyzer;
+package bg.sofia.uni.fmi.mjt.foodanalyzer.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
