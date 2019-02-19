@@ -35,9 +35,15 @@ public class Report {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Report)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Report)) {
+            return false;
+        }
+
         Report report = (Report) o;
+
         return Objects.equals(name, report.name);
     }
 

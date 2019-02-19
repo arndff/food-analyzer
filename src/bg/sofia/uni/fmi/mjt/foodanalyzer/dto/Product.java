@@ -22,7 +22,9 @@ public class Product {
     }
 
     public void setNameAndUpc() {
-        if("Branded Food Products Database".equals(group)) {
+        String BRANDED_FOOD_PRODUCTS = "Branded Food Products Database";
+
+        if (BRANDED_FOOD_PRODUCTS.equals(group)) {
             String[] splittedName = name.split(", UPC: ");
             setName(splittedName[0]);
             setUpc(splittedName[1]);
@@ -56,9 +58,15 @@ public class Product {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Product)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Product)) {
+            return false;
+        }
+
         Product product = (Product) o;
+
         return ndbno == product.ndbno;
     }
 
