@@ -37,7 +37,7 @@ public class FoodServer {
 
         try {
             file.createNewFile();
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.err.println(e.getMessage());
         }
 
@@ -48,46 +48,46 @@ public class FoodServer {
         File file = setupFilePath(FOOD_BY_NAME_CACHE_FILE);
         ConcurrentMap<String, List<Product>> cache = new ConcurrentHashMap<>();
 
-        if(file.length() == 0) {
+        if (file.length() == 0) {
             return cache;
         }
 
-        try(FileReader in = new FileReader(file)) {
-            Gson gson = new Gson();
-            cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, List<Product>>>() {}.getType());
-        } catch(IOException e) {
-            System.err.println(e.getMessage());
+        try (FileReader in = new FileReader(file)) {
+             Gson gson = new Gson();
+             cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, List<Product>>>() {}.getType());
+        } catch (IOException e) {
+             System.err.println(e.getMessage());
         }
 
         return cache;
     }
 
-    private static<T> ConcurrentMap<String, T> loadSimpleCache(String path) {
+    private static <T> ConcurrentMap<String, T> loadSimpleCache(String path) {
         File file = setupFilePath(path);
         ConcurrentHashMap<String, T> cache = new ConcurrentHashMap<>();
 
-        if(file.length() == 0) {
+        if (file.length() == 0) {
             return cache;
         }
 
-        try(FileReader in = new FileReader(file)) {
-            Gson gson = new Gson();
-            cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
-        } catch(IOException e) {
-            System.err.println(e.getMessage());
+        try (FileReader in = new FileReader(file)) {
+             Gson gson = new Gson();
+             cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
+        } catch (IOException e) {
+             System.err.println(e.getMessage());
         }
 
         return cache;
     }
 
-    private static<T> void saveCache(String path, T cache) {
+    private static <T> void saveCache(String path, T cache) {
         File file = new File(path);
 
-        try(FileWriter out = new FileWriter(file, false)) {
-            Gson gson = new Gson();
-            out.write(gson.toJson(cache));
+        try (FileWriter out = new FileWriter(file, false)) {
+             Gson gson = new Gson();
+             out.write(gson.toJson(cache));
         } catch(IOException e) {
-            System.err.println(e.getMessage());
+             System.err.println(e.getMessage());
         }
     }
 
@@ -98,13 +98,13 @@ public class FoodServer {
     }
 
     private static void saveAllCachesToFiles() {
-        if(foodByNameCache.size() != 0) {
+        if (foodByNameCache.size() != 0) {
             saveCache(FOOD_BY_NAME_CACHE_FILE, foodByNameCache);
         }
-        if(foodByNdbnoCache.size() != 0) {
+        if (foodByNdbnoCache.size() != 0) {
             saveCache(FOOD_BY_NDBNO_CACHE_FILE, foodByNdbnoCache);
         }
-        if(foodByUpcCache.size() != 0) {
+        if (foodByUpcCache.size() != 0) {
             saveCache(FOOD_BY_UPC_CACHE_FILE, foodByUpcCache);
         }
     }
@@ -123,10 +123,10 @@ public class FoodServer {
         loadAllCachesFromFiles();
 
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
-            System.out.println("FoodServer has been started and listening for incoming requests.");
-            Socket clientSocket;
+             System.out.println("FoodServer has been started and listening for incoming requests.");
+             Socket clientSocket;
 
-            while(true) {
+             while (true) {
                 // Calling accept() blocks and waits for connection request by a client
                 // When a request comes, accept() returns a socket to communicate with this client
                 clientSocket = serverSocket.accept();
@@ -141,7 +141,7 @@ public class FoodServer {
 
                 executor.execute(clientHandler);
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.err.println(e.getMessage());
         }
 

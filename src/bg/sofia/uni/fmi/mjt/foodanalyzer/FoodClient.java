@@ -12,19 +12,16 @@ public class FoodClient {
     private static final int SERVER_PORT = 4444;
 
     public static void main(String[] args) {
-        try(Socket s = new Socket("localhost", SERVER_PORT);
-            PrintWriter pw = new PrintWriter(s.getOutputStream(), true);
-            BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            Scanner sc = new Scanner(System.in)) {
+        try (Socket s = new Socket("localhost", SERVER_PORT);
+             PrintWriter pw = new PrintWriter(s.getOutputStream(), true);
+             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+             Scanner sc = new Scanner(System.in)) {
 
-            while(true) {
-                // 1) user should be required to enter their API key first,
-                //    so ClientRequestHandler to be initialized with personal API key
-                // 2) enter N queries
-
+            while (true) {
                 String message = sc.nextLine(); // read a line from the console
+                String QUIT_MESSAGE = "quit";
 
-                if("quit".equals(message)) {
+                if (QUIT_MESSAGE.equals(message)) {
                     System.out.println("Closing your session...");
                     break;
                 }
@@ -37,7 +34,7 @@ public class FoodClient {
                 String[] objects = reply.split(";");
                 Arrays.stream(objects).forEach(System.out::println);
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
