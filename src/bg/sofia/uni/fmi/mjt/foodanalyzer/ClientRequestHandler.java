@@ -2,18 +2,29 @@ package bg.sofia.uni.fmi.mjt.foodanalyzer;
 
 import bg.sofia.uni.fmi.mjt.foodanalyzer.dto.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.dto.Report;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import com.google.zxing.*;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.FormatException;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.oned.UPCAReader;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import javax.imageio.ImageIO;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.File;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -21,10 +32,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 public class ClientRequestHandler implements Runnable {
     private Socket socket;
-    private String apiKey = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
+    private String API_URL = "https://api.nal.usda.gov/ndb";
+    private String API_KEY = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
 
     private final ConcurrentMap<String, List<Product>> foodByNameCache;
     private final ConcurrentMap<String, Report> foodByNdbnoCache;
@@ -35,7 +48,6 @@ public class ClientRequestHandler implements Runnable {
                                 ConcurrentMap<String, Report> foodByNdbnoCache,
                                 ConcurrentMap<String, Product> foodByUpcCache) {
         this.socket = socket;
-        // this.apiKey = apiKey;
 
         this.foodByNameCache = foodByNameCache;
         this.foodByNdbnoCache = foodByNdbnoCache;
@@ -44,41 +56,41 @@ public class ClientRequestHandler implements Runnable {
 
     @Override
     public void run() {
-        try(PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            String inputLine;
+             String inputLine;
 
-            while((inputLine = in.readLine()) != null) { // read the message from the client
+             while ((inputLine = in.readLine()) != null) { // read the message from the client
                 String[] queryTokens = inputLine.split(" ");
                 String inputValidationErr = validateUserInput(queryTokens);
 
-                if(inputValidationErr == null) {
+                if (inputValidationErr == null) {
                     String result = executeQueryByItsType(queryTokens);
                     out.println(result); // send result to the client
                 } else {
                     out.println(inputValidationErr);
                 }
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.err.println(e.getMessage());
         } finally {
             try {
                 socket.close();
-            } catch(IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
     private String validateUserInput(String[] userInput) {
-        if(userInput.length != 2) {
+        if (userInput.length != 2) {
             return "A query must have exactly 2 arguments: a type and an argument.";
         }
 
         String queryType = userInput[0];
 
-        switch(queryType) {
+        switch (queryType) {
             case "get-food": case "get-food-report": case "get-food-by-barcode":
                 return null;
             default:
@@ -101,7 +113,7 @@ public class ClientRequestHandler implements Runnable {
         String queryType = userInput[0];
         String queryArg = userInput[1];
 
-        switch(queryType) {
+        switch (queryType) {
             case "get-food":
                 return getFoodByName(queryArg);
             case "get-food-report":
@@ -109,7 +121,7 @@ public class ClientRequestHandler implements Runnable {
             case "get-food-by-barcode":
                 String[] splittedArgs = queryArg.split("\\|");
 
-                if(validateQueryByBarcodeArg(splittedArgs[0])) {
+                if (validateQueryByBarcodeArg(splittedArgs[0])) {
                     String arg = extractQueryByBarcodeArg(splittedArgs[0]);
                     boolean isPathToImg = splittedArgs[0].startsWith("--img");
 
@@ -139,17 +151,13 @@ public class ClientRequestHandler implements Runnable {
 
         if (foodByNameCache.containsKey(name)) {
             List<Product> products = foodByNameCache.get(name);
-            StringBuilder allProducts = new StringBuilder();
 
-            for (Product product : products) {
-                allProducts.append(product);
-                allProducts.append(";");
-            }
-
-            return allProducts.toString();
+            return products.stream()
+                           .map(Product::toString)
+                           .collect(Collectors.joining("\n"));
         }
 
-        String url = "https://api.nal.usda.gov/ndb/search/?q=" + name + "&api_key=" + apiKey;
+        String url = API_URL + "/search/?q=" + name + "&api_key=" + API_KEY;
 
         try {
             JsonObject responseToJson = urlResponseToJson(url);
@@ -157,28 +165,23 @@ public class ClientRequestHandler implements Runnable {
                                             .get("item").getAsJsonArray();
 
             List<Product> products = gson.fromJson(items, new TypeToken<List<Product>>() {}.getType());
-            StringBuilder allProducts = new StringBuilder();
-
-            for(Product product : products) {
-                product.setNameAndUpc();
-                allProducts.append(product);
-                allProducts.append(";");
-            }
+            products.forEach(Product::setNameAndUpc);
 
             // Updating foodByNameCache
             foodByNameCache.put(name, products);
 
             // Updating foodByUpcCache
-            for(Product product : products) {
-                if(product.getUpc() != null) {
-                    foodByUpcCache.put(product.getUpc(), product);
-                }
-            }
+            products.stream()
+                    .filter(product -> product.getUpc() != null)
+                    .collect(Collectors.toList())
+                    .forEach(product -> foodByUpcCache.put(product.getUpc(), product));
 
-            return allProducts.toString();
-        } catch(NullPointerException e) {
+            return products.stream()
+                           .map(Product::toString)
+                           .collect(Collectors.joining(";"));
+        } catch (NullPointerException e) {
             return "No information found for " + name + ".";
-        } catch(IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -193,7 +196,8 @@ public class ClientRequestHandler implements Runnable {
 
     private Report createReportObject(JsonObject food) {
         String name = food.get("desc").getAsJsonObject()
-                          .get("name").getAsString().split(", U")[0];
+                          .get("name").getAsString()
+                          .split(", U")[0];
 
         String ingredients = food.get("ing").getAsJsonObject()
                                  .get("desc").getAsString();
@@ -209,11 +213,11 @@ public class ClientRequestHandler implements Runnable {
     }
 
     private String getFoodByNdbno(String ndbno) {
-        if(foodByNdbnoCache.containsKey(ndbno)) {
+        if (foodByNdbnoCache.containsKey(ndbno)) {
             return foodByNdbnoCache.get(ndbno).toString();
         }
 
-        String url = "https://api.nal.usda.gov/ndb/V2/reports?ndbno=" + ndbno + "&format=json&api_key=" + apiKey;
+        String url = API_URL + "/V2/reports?ndbno=" + ndbno + "&format=json&api_key=" + API_KEY;
 
         try {
             JsonObject response = urlResponseToJson(url);
@@ -228,9 +232,9 @@ public class ClientRequestHandler implements Runnable {
             foodByNdbnoCache.put(ndbno, report);
 
             return report.toString();
-        } catch(NullPointerException e) {
+        } catch (NullPointerException e) {
             return "No information found for ndbno " + ndbno + ".";
-        } catch(IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -272,7 +276,9 @@ public class ClientRequestHandler implements Runnable {
         String barcode;
         barcode = (isPathToImg) ? decodeBarcode(arg) : arg;
 
-        if(barcode != null) {
+        System.out.println(barcode);
+
+        if (barcode != null) {
             if (foodByUpcCache.containsKey(barcode)) {
                 return foodByUpcCache.get(barcode).toString();
             }
