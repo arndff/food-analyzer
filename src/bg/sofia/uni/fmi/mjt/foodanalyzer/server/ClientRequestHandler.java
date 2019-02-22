@@ -1,43 +1,21 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.dto.Product;
-import bg.sofia.uni.fmi.mjt.foodanalyzer.dto.Report;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
-
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.FormatException;
-import com.google.zxing.NotFoundException;
-import com.google.zxing.Result;
-import com.google.zxing.RGBLuminanceSource;
-import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.oned.UPCAReader;
-
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.Command;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.CommandFactory;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.File;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 public class ClientRequestHandler implements Runnable {
+
     private Socket socket;
-    private String API_URL = "https://api.nal.usda.gov/ndb";
-    private String API_KEY = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
 
     private final ConcurrentMap<String, List<Product>> foodByNameCache;
     private final ConcurrentMap<String, Report> foodByNdbnoCache;
@@ -59,17 +37,17 @@ public class ClientRequestHandler implements Runnable {
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-             String inputLine;
+            String inputLine;
 
-             while ((inputLine = in.readLine()) != null) { // read the message from the client
-                String[] queryTokens = inputLine.split(" ");
-                String inputValidationErr = validateUserInput(queryTokens);
+            while ((inputLine = in.readLine()) != null) { // read the message from the client
+                String[] userInput = inputLine.split("\\s+");
+                int userInputLength = userInput.length;
 
-                if (inputValidationErr == null) {
-                    String result = executeQueryByItsType(queryTokens);
+                if (userInputLength == 2) {
+                    String result = executeQueryByItsType(userInput);
                     out.println(result); // send result to the client
                 } else {
-                    out.println(inputValidationErr);
+                    out.println("You should pass exactly two arguments: a query and its argument.");
                 }
             }
         } catch (IOException e) {
@@ -83,209 +61,17 @@ public class ClientRequestHandler implements Runnable {
         }
     }
 
-    private String validateUserInput(String[] userInput) {
-        if (userInput.length != 2) {
-            return "A query must have exactly 2 arguments: a type and an argument.";
-        }
-
-        String queryType = userInput[0];
-
-        switch (queryType) {
-            case "get-food": case "get-food-report": case "get-food-by-barcode":
-                return null;
-            default:
-                return "Incorrect query type.";
-        }
-    }
-
-    private boolean validateQueryByBarcodeArg(String arg) {
-        return (arg.startsWith("--upc=<") || arg.startsWith("--img=<")) && arg.endsWith(">");
-    }
-
-    private String extractQueryByBarcodeArg(String arg) {
-        int openingBracketIdx = arg.indexOf('<');
-        int closingBracketIdx = arg.indexOf('>');
-
-        return arg.substring(openingBracketIdx + 1, closingBracketIdx);
-    }
-
     private String executeQueryByItsType(String[] userInput) {
         String queryType = userInput[0];
         String queryArg = userInput[1];
 
-        switch (queryType) {
-            case "get-food":
-                return getFoodByName(queryArg);
-            case "get-food-report":
-                return getFoodByNdbno(queryArg);
-            case "get-food-by-barcode":
-                String[] splittedArgs = queryArg.split("\\|");
+        CommandFactory commandFactory = CommandFactory.getCommandFactory();
+        Command cmd = commandFactory.getCommand(queryType, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
 
-                if (validateQueryByBarcodeArg(splittedArgs[0])) {
-                    String arg = extractQueryByBarcodeArg(splittedArgs[0]);
-                    boolean isPathToImg = splittedArgs[0].startsWith("--img");
-
-                    return getFoodByBarcode(arg, isPathToImg);
-                } else {
-                    return "Get food by barcode was called with an invalid argument(s).";
-                }
-
-            default:
-                return null; // should never reach this line
-        }
-    }
-
-    // helper method which is used in all query methods
-    private JsonObject urlResponseToJson(String url) throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
-
-        String response = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
-        JsonParser parser = new JsonParser();
-
-        return parser.parse(response).getAsJsonObject();
-    }
-
-    private String getFoodByName(String name) {
-        Gson gson = new Gson();
-
-        if (foodByNameCache.containsKey(name)) {
-            List<Product> products = foodByNameCache.get(name);
-
-            return products.stream()
-                           .map(Product::toString)
-                           .collect(Collectors.joining("\n"));
-        }
-
-        String url = API_URL + "/search/?q=" + name + "&api_key=" + API_KEY;
-
-        try {
-            JsonObject responseToJson = urlResponseToJson(url);
-            JsonArray items = responseToJson.get("list").getAsJsonObject()
-                                            .get("item").getAsJsonArray();
-
-            List<Product> products = gson.fromJson(items, new TypeToken<List<Product>>() {}.getType());
-            products.forEach(Product::setNameAndUpc);
-
-            // Updating foodByNameCache
-            foodByNameCache.put(name, products);
-
-            // Updating foodByUpcCache
-            products.stream()
-                    .filter(product -> product.getUpc() != null)
-                    .collect(Collectors.toList())
-                    .forEach(product -> foodByUpcCache.put(product.getUpc(), product));
-
-            return products.stream()
-                           .map(Product::toString)
-                           .collect(Collectors.joining(";"));
-        } catch (NullPointerException e) {
-            return "No information found for " + name + ".";
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    // helper method which is used in createReportObject to set some of Report's object data members
-    private double extractSpecificNutrient(JsonArray nutrients, int index) {
-        return nutrients.get(index).getAsJsonObject()
-                        .get("value").getAsDouble();
-    }
-
-    private Report createReportObject(JsonObject food) {
-        String name = food.get("desc").getAsJsonObject()
-                          .get("name").getAsString()
-                          .split(", U")[0];
-
-        String ingredients = food.get("ing").getAsJsonObject()
-                                 .get("desc").getAsString();
-
-        JsonArray nutrients = food.get("nutrients").getAsJsonArray();
-        double kcal = extractSpecificNutrient(nutrients, 0);
-        double protein = extractSpecificNutrient(nutrients, 1);
-        double fat = extractSpecificNutrient(nutrients, 2);
-        double carbohydrate = extractSpecificNutrient(nutrients, 3);
-        double fiber = extractSpecificNutrient(nutrients, 4);
-
-        return new Report(name, ingredients, kcal, protein, fat, carbohydrate, fiber);
-    }
-
-    private String getFoodByNdbno(String ndbno) {
-        if (foodByNdbnoCache.containsKey(ndbno)) {
-            return foodByNdbnoCache.get(ndbno).toString();
-        }
-
-        String url = API_URL + "/V2/reports?ndbno=" + ndbno + "&format=json&api_key=" + API_KEY;
-
-        try {
-            JsonObject response = urlResponseToJson(url);
-
-            JsonObject food = response.getAsJsonArray("foods")
-                                      .get(0).getAsJsonObject()
-                                      .get("food").getAsJsonObject();
-
-            Report report = createReportObject(food);
-
-            // Updating foodByNdbnoCache
-            foodByNdbnoCache.put(ndbno, report);
-
-            return report.toString();
-        } catch (NullPointerException e) {
-            return "No information found for ndbno " + ndbno + ".";
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private String decodeBarcode(String fileName) {
-        File file = new File(fileName);
-        BufferedImage image = null;
-        BinaryBitmap bitmap = null;
-        Result result = null;
-
-        try {
-            image = ImageIO.read(file);
-            int[] pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
-            RGBLuminanceSource source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
-            bitmap = new BinaryBitmap(new HybridBinarizer(source));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (bitmap == null) {
-            return null;
-        }
-
-        UPCAReader reader = new UPCAReader();
-
-        try {
-            result = reader.decode(bitmap);
-            return result.getText();
-        } catch (NotFoundException | FormatException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private String getFoodByBarcode(String arg, boolean isPathToImg) {
-        String barcode;
-        barcode = (isPathToImg) ? decodeBarcode(arg) : arg;
-
-        System.out.println(barcode);
-
-        if (barcode != null) {
-            if (foodByUpcCache.containsKey(barcode)) {
-                return foodByUpcCache.get(barcode).toString();
-            }
+        if (cmd != null) {
+            return cmd.execute(queryArg);
         } else {
-            return "Invalid upc or image path.";
+            return "Invalid query type.";
         }
-
-        return "No product with this barcode=" + barcode + " has been found.";
     }
 }
