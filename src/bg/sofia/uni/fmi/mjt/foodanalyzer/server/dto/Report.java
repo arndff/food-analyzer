@@ -1,8 +1,9 @@
-package bg.sofia.uni.fmi.mjt.foodanalyzer.dto;
+package bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto;
 
 import java.util.Objects;
 
 public class Report {
+
     private String name;
     private String ingredients;
     private double kcal;

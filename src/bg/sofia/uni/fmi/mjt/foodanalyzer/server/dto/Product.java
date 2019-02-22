@@ -1,8 +1,11 @@
-package bg.sofia.uni.fmi.mjt.foodanalyzer.dto;
+package bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto;
 
 import java.util.Objects;
 
 public class Product {
+
+    private final static String BRANDED_FOOD_PRODUCTS = "Branded Food Products Database";
+
     private String group;
     private String name;
     private int ndbno;
@@ -22,8 +25,6 @@ public class Product {
     }
 
     public void setNameAndUpc() {
-        String BRANDED_FOOD_PRODUCTS = "Branded Food Products Database";
-
         if (BRANDED_FOOD_PRODUCTS.equals(group)) {
             String[] splittedName = name.split(", UPC: ");
             setName(splittedName[0]);
