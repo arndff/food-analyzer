@@ -1,7 +1,5 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.client;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
