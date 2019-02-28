@@ -42,18 +42,6 @@ public class FoodServer {
         return foodServer;
     }
 
-    public ConcurrentMap<String, List<Product>> getFoodByNameCache() {
-        return foodByNameCache;
-    }
-
-    public ConcurrentMap<String, Report> getFoodByNdbnoCache() {
-        return foodByNdbnoCache;
-    }
-
-    public ConcurrentMap<String, Product> getFoodByUpcCache() {
-        return foodByUpcCache;
-    }
-
     private File setupFilePath(String path) {
         // if the folder and the file already exist, they won't be created once again
         File folder = new File(path.substring(0, path.indexOf('/')));
@@ -80,8 +68,7 @@ public class FoodServer {
 
         try (FileReader in = new FileReader(file)) {
             Gson gson = new Gson();
-            cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, List<Product>>>() {
-            }.getType());
+            cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, List<Product>>>() {}.getType());
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -99,8 +86,7 @@ public class FoodServer {
 
         try (FileReader in = new FileReader(file)) {
             Gson gson = new Gson();
-            cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {
-            }.getType());
+            cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -140,13 +126,8 @@ public class FoodServer {
     public void start() {
         ExecutorService executor = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
 
-        // the method inside run() is going to be executed after the server is closed
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                saveAllCachesToFiles();
-            }
-        });
+        // the method inside run() is going to be executed after the server is terminated
+        Runtime.getRuntime().addShutdownHook(new Thread(this::saveAllCachesToFiles));
 
         loadAllCachesFromFiles();
 
@@ -163,14 +144,12 @@ public class FoodServer {
 
                     // Want each client to be processed in a separate thread
                     // to keep the current thread free to accept() requests from new clients
-                    ClientRequestHandler clientHandler = new ClientRequestHandler(clientSocket,
-                                                                                  foodServer.getFoodByNameCache(),
-                                                                                  foodServer.getFoodByNdbnoCache(),
-                                                                                  foodServer.getFoodByUpcCache());
+                    ClientRequestHandler clientHandler =
+                            new ClientRequestHandler(clientSocket, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
 
                     executor.execute(clientHandler);
                 // if accept() method fails, it throws one of these two exceptions
-                } catch (NullPointerException | IOException e) {
+                } catch (IOException | NullPointerException e) {
                     System.err.println(e.getMessage());
                 }
             }
