@@ -1,5 +1,7 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.client;
 
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,12 +12,12 @@ import java.util.Scanner;
 
 public class FoodClient {
 
-    private static final String QUIT_MESSAGE = "quit";
+    private static final String DEFAULT_HOST = "localhost";
     private static final int SERVER_PORT = 4444;
+    private static final String QUIT_MESSAGE = "quit";
 
-    public static void main(String[] args) {
-
-        try (Socket socket = new Socket("localhost", SERVER_PORT);
+    public static void start() {
+        try (Socket socket = new Socket(DEFAULT_HOST, SERVER_PORT);
              PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              Scanner scanner = new Scanner(System.in)) {
@@ -39,5 +41,9 @@ public class FoodClient {
         } catch (IOException e) {
             System.out.println("A problem occured.");
         }
+    }
+
+    public static void main(String[] args) {
+        FoodClient.start();
     }
 }

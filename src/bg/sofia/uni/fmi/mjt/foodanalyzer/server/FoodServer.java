@@ -16,6 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FoodServer {
 
@@ -29,6 +31,8 @@ public class FoodServer {
     private ConcurrentMap<String, List<Product>> foodByNameCache;
     private ConcurrentMap<String, Report> foodByNdbnoCache;
     private ConcurrentMap<String, Product> foodByUpcCache;
+
+    private static final Logger logger = Logger.getLogger(FoodServer.class.getName());
 
     private static final FoodServer foodServer = new FoodServer();
 
@@ -59,7 +63,8 @@ public class FoodServer {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            // System.err.println(e.getMessage());
+            logger.log(Level.SEVERE, "Error in setupFilePath method", e);
         }
 
         return file;
@@ -132,25 +137,24 @@ public class FoodServer {
         }
     }
 
-    public static void main(String[] args) {
+    public void start() {
         ExecutorService executor = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
-        FoodServer foodServer = FoodServer.getFoodServer();
 
         // the method inside run() is going to be executed after the server is closed
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                foodServer.saveAllCachesToFiles();
+                saveAllCachesToFiles();
             }
         });
 
-        foodServer.loadAllCachesFromFiles();
+        loadAllCachesFromFiles();
 
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
-             System.out.println("FoodServer has been started and listening for incoming requests.");
-             Socket clientSocket;
+            System.out.println("FoodServer has been started and listening for incoming requests.");
+            Socket clientSocket;
 
-             while (true) {
+            while (true) {
                 // Calling accept() blocks and waits for connection request by a client
                 // When a request comes, accept() returns a socket to communicate with this client
                 try {
@@ -165,7 +169,8 @@ public class FoodServer {
                                                                                   foodServer.getFoodByUpcCache());
 
                     executor.execute(clientHandler);
-                } catch(IOException e) {
+                // if accept() method fails, it throws one of these two exceptions
+                } catch (NullPointerException | IOException e) {
                     System.err.println(e.getMessage());
                 }
             }
@@ -174,5 +179,9 @@ public class FoodServer {
         }
 
         System.out.println("Server is terminating...");
+    }
+
+    public static void main(String[] args) {
+        FoodServer.getFoodServer().start();
     }
 }
