@@ -22,8 +22,9 @@ import java.util.logging.Logger;
 public class FoodServer {
 
     private static final int SERVER_PORT = 4444;
-    private static final int MAX_EXECUTOR_THREADS = 10;
+    private static final int MAX_EXECUTOR_THREADS = 20;
 
+    private static final String CACHES_FOLDER = "data/";
     private static final String FOOD_BY_NAME_CACHE_FILE = "data/foodByName.json";
     private static final String FOOD_BY_NDBNO_CACHE_FILE = "data/foodByNdbno.json";
     private static final String FOOD_BY_UPC_CACHE_FILE = "data/foodByUpc.json";
@@ -32,7 +33,7 @@ public class FoodServer {
     private ConcurrentMap<String, Report> foodByNdbnoCache;
     private ConcurrentMap<String, Product> foodByUpcCache;
 
-    private static final Logger logger = Logger.getLogger(FoodServer.class.getName());
+    protected static final Logger logger = Logger.getLogger(FoodServer.class.getName());
 
     private static final FoodServer foodServer = new FoodServer();
 
@@ -42,17 +43,19 @@ public class FoodServer {
         return foodServer;
     }
 
+    public static Logger getFoodServerLogger() { return logger; }
+
     private File setupFilePath(String path) {
-        // if the folder and the file already exist, they won't be created once again
-        File folder = new File(path.substring(0, path.indexOf('/')));
-        folder.mkdir();
         File file = new File(path);
 
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            // System.err.println(e.getMessage());
-            logger.log(Level.SEVERE, "Error in setupFilePath method", e);
+        // if the file already exists, it won't be created once again
+        if(!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                logger.log(Level.WARNING,
+                        "Error occurred in calling createNewFile method in FoodServer::setupFilePath.", e);
+            }
         }
 
         return file;
@@ -70,7 +73,7 @@ public class FoodServer {
             Gson gson = new Gson();
             cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, List<Product>>>() {}.getType());
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.log(Level.WARNING, "Error occurred in FoodServer::loadFoodByNameCache.", e);
         }
 
         return cache;
@@ -88,7 +91,7 @@ public class FoodServer {
             Gson gson = new Gson();
             cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.log(Level.WARNING, "Error occurred in FoodServer::loadSimpleCache called with " + path + ".", e);
         }
 
         return cache;
@@ -101,7 +104,8 @@ public class FoodServer {
             Gson gson = new Gson();
             out.write(gson.toJson(cache));
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.log(Level.WARNING,
+                    "Error occurred in FoodServer::saveCache. Cache argument: " + path.split("/")[1]);
         }
     }
 
@@ -121,15 +125,21 @@ public class FoodServer {
         if (foodByUpcCache.size() != 0) {
             saveCache(FOOD_BY_UPC_CACHE_FILE, foodByUpcCache);
         }
+
+        System.out.println("Data from all three caches have been saved successfully.");
     }
 
     public void start() {
-        ExecutorService executor = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
+        ExecutorService executorService = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
 
         // the method inside run() is going to be executed after the server is terminated
         Runtime.getRuntime().addShutdownHook(new Thread(this::saveAllCachesToFiles));
 
+        File cachesFolder = new File(CACHES_FOLDER);
+        cachesFolder.mkdir();
+
         loadAllCachesFromFiles();
+        System.out.println("Data from all three caches have ben loaded successfully.");
 
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
             System.out.println("FoodServer has been started and listening for incoming requests.");
@@ -147,14 +157,13 @@ public class FoodServer {
                     ClientRequestHandler clientHandler =
                             new ClientRequestHandler(clientSocket, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
 
-                    executor.execute(clientHandler);
-                // if accept() method fails, it throws one of these two exceptions
+                    executorService.execute(clientHandler);
                 } catch (IOException | NullPointerException e) {
-                    System.err.println(e.getMessage());
+                    logger.log(Level.WARNING, "serverSocket's accept method failed.", e);
                 }
             }
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.log(Level.SEVERE, "Failed to create an instance of ServerSocket.", e);
         }
 
         System.out.println("Server is terminating...");

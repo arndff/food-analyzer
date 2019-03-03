@@ -37,7 +37,7 @@ public class FoodClient {
                 Arrays.stream(objects).forEach(System.out::println);
             }
         } catch (IOException e) {
-            System.out.println("A problem occured.");
+            System.out.println("A problem occurred. Closing your session...");
         }
     }
 

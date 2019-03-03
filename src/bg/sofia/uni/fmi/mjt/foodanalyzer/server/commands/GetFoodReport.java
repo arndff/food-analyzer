@@ -1,11 +1,14 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GetFoodReport extends Command {
 
@@ -61,7 +64,8 @@ public class GetFoodReport extends Command {
         } catch (NullPointerException e) {
             return "No information found for ndbno " + argument + ".";
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            Logger foodServerLogger = FoodServer.getFoodServerLogger();
+            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodReport::execute.", e);
         }
 
         return null;

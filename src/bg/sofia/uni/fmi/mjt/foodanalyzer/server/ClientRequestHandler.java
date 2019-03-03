@@ -12,6 +12,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+
+import static bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer.logger;
 
 public class ClientRequestHandler implements Runnable {
 
@@ -51,12 +54,13 @@ public class ClientRequestHandler implements Runnable {
                 }
             }
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.log(Level.SEVERE, "A problem occurred in ClientRequestHandler::run.", e);
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE,
+                        "A problem occurred while trying to close the socket in ClientRequestHandler::run", e);
             }
         }
     }
@@ -69,7 +73,13 @@ public class ClientRequestHandler implements Runnable {
         Command cmd = commandFactory.getCommand(queryType, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
 
         if (cmd != null) {
-            return cmd.execute(queryArg);
+            String result = cmd.execute(queryArg);
+
+            if (result != null) {
+                return result;
+            } else {
+                return "Your query wasn't executed successfully.";
+            }
         } else {
             return "Invalid query type.";
         }

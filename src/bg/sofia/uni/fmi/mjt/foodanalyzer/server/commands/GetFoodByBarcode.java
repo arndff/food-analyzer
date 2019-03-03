@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.FormatException;
@@ -15,6 +16,8 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.io.File;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GetFoodByBarcode extends Command {
     GetFoodByBarcode(ConcurrentMap<String, Product> foodByUpcCache) {
@@ -57,7 +60,8 @@ public class GetFoodByBarcode extends Command {
             result = reader.decode(bitmap);
             return result.getText();
         } catch (NotFoundException | FormatException e) {
-            e.printStackTrace();
+            Logger foodServerLogger = FoodServer.getFoodServerLogger();
+            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodByBarcode::decode.", e);
         }
 
         return null;
