@@ -5,10 +5,7 @@ import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -54,7 +51,7 @@ public class FoodServer {
                 file.createNewFile();
             } catch (IOException e) {
                 logger.log(Level.WARNING,
-                        "Error occurred in calling createNewFile method in FoodServer::setupFilePath.", e);
+                        "Error occurred when createNewFile() method has been called in FoodServer::setupFilePath.", e);
             }
         }
 
@@ -72,6 +69,8 @@ public class FoodServer {
         try (FileReader in = new FileReader(file)) {
             Gson gson = new Gson();
             cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, List<Product>>>() {}.getType());
+        } catch (FileNotFoundException e) {
+            logger.log(Level.WARNING, "Error occurred in FoodServer::loadFoodByNameCache (file not found)", e);
         } catch (IOException e) {
             logger.log(Level.WARNING, "Error occurred in FoodServer::loadFoodByNameCache.", e);
         }
@@ -90,8 +89,11 @@ public class FoodServer {
         try (FileReader in = new FileReader(file)) {
             Gson gson = new Gson();
             cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Error occurred in FoodServer::loadSimpleCache called with " + path + ".", e);
+        } catch (FileNotFoundException e) {
+            logger.log(Level.WARNING,
+                    String.format("Error occurred in FoodServer::loadSimpleCache (%s not found)", path), e);
+        } catch(IOException e) {
+            logger.log(Level.WARNING, "Error occurred in FoodServer::loadSimpleCache.", e);
         }
 
         return cache;
@@ -105,7 +107,7 @@ public class FoodServer {
             out.write(gson.toJson(cache));
         } catch (IOException e) {
             logger.log(Level.WARNING,
-                    "Error occurred in FoodServer::saveCache. Cache argument: " + path.split("/")[1]);
+                    String.format("Error occurred in FoodServer::saveCache. Cache argument: %s", path.split("/")[1]), e);
         }
     }
 
@@ -139,7 +141,7 @@ public class FoodServer {
         cachesFolder.mkdir();
 
         loadAllCachesFromFiles();
-        System.out.println("Data from all three caches have ben loaded successfully.");
+        System.out.println("Data from all three caches have been loaded successfully.");
 
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
             System.out.println("FoodServer has been started and listening for incoming requests.");
@@ -159,7 +161,7 @@ public class FoodServer {
 
                     executorService.execute(clientHandler);
                 } catch (IOException | NullPointerException e) {
-                    logger.log(Level.WARNING, "serverSocket's accept method failed.", e);
+                    logger.log(Level.WARNING, "ServerSocket::accept failed.", e);
                 }
             }
         } catch (IOException e) {

@@ -47,7 +47,8 @@ public class GetFoodByBarcode extends Command {
             RGBLuminanceSource source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
             bitmap = new BinaryBitmap(new HybridBinarizer(source));
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger logger = FoodServer.getFoodServerLogger();
+            logger.log(Level.WARNING, "Exception caught in GetFoodByBarcode::decodeBarcode (ImageIO::read).", e);
         }
 
         if (bitmap == null) {
@@ -61,7 +62,7 @@ public class GetFoodByBarcode extends Command {
             return result.getText();
         } catch (NotFoundException | FormatException e) {
             Logger foodServerLogger = FoodServer.getFoodServerLogger();
-            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodByBarcode::decode.", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodByBarcode::decode (UPCAReader::decode).", e);
         }
 
         return null;
