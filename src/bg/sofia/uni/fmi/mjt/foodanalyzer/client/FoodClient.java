@@ -10,8 +10,8 @@ import java.util.Scanner;
 
 public class FoodClient {
 
-    private static final String DEFAULT_HOST = "localhost";
     private static final int SERVER_PORT = 4444;
+    private static final String DEFAULT_HOST = "localhost";
     private static final String QUIT_MESSAGE = "quit";
 
     public static void start() {
@@ -34,7 +34,8 @@ public class FoodClient {
                 System.out.println("The server replied:");
                 String reply = bufferedReader.readLine();
                 String[] objects = reply.split(";");
-                Arrays.stream(objects).forEach(System.out::println);
+                Arrays.stream(objects)
+                      .forEach(System.out::println);
             }
         } catch (IOException e) {
             System.out.println("A problem occurred. Closing your session...");
@@ -42,6 +43,6 @@ public class FoodClient {
     }
 
     public static void main(String[] args) {
-        FoodClient.start();
+        start();
     }
 }

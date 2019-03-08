@@ -18,8 +18,8 @@ public abstract class Command {
     protected final ConcurrentMap<String, Report> foodByNdbnoCache;
     protected final ConcurrentMap<String, Product> foodByUpcCache;
 
-    protected final String API_URL = "https://api.nal.usda.gov/ndb";
-    protected final String API_KEY = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
+    protected static final String API_URL = "https://api.nal.usda.gov/ndb";
+    protected static final String API_KEY = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
 
     Command(ConcurrentMap<String, List<Product>> foodByNameCache,
             ConcurrentMap<String, Report> foodByNdbnoCache,

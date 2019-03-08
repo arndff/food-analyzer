@@ -44,7 +44,6 @@ public class Report {
         }
 
         Report report = (Report) o;
-
         return Objects.equals(name, report.name);
     }
 

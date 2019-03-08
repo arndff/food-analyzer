@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class Product {
 
-    private final static String BRANDED_FOOD_PRODUCTS = "Branded Food Products Database";
+    private static final String BRANDED_FOOD_PRODUCTS = "Branded Food Products Database";
 
     private String group;
     private String name;
@@ -53,7 +53,6 @@ public class Product {
         }
 
         result += "]";
-
         return result;
     }
 
@@ -67,7 +66,6 @@ public class Product {
         }
 
         Product product = (Product) o;
-
         return ndbno == product.ndbno;
     }
 
