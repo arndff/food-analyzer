@@ -3,6 +3,7 @@ package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
@@ -10,9 +11,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class GetFoodReport extends Command {
+public class GetFoodReportCommand extends Command {
 
-    public GetFoodReport(ConcurrentMap<String, Report> foodByNdbnoCache) {
+    public GetFoodReportCommand(ConcurrentMap<String, Report> foodByNdbnoCache) {
         super(null, foodByNdbnoCache, null);
     }
 
@@ -51,21 +52,23 @@ public class GetFoodReport extends Command {
         try {
             JsonObject response = urlResponseToJson(url);
 
-            JsonObject food = response.getAsJsonArray("foods")
-                                      .get(0).getAsJsonObject()
-                                      .get("food").getAsJsonObject();
+            JsonElement food = response.getAsJsonArray("foods")
+                                       .get(0).getAsJsonObject()
+                                       .get("food");
 
-            Report report = createReportObject(food);
+            if(food == null) {
+                return "No information found for ndbno " + argument + ".";
+            }
+
+            Report report = createReportObject(food.getAsJsonObject());
 
             // Updating foodByNdbnoCache
             foodByNdbnoCache.put(argument, report);
 
             return report.toString();
-        } catch (NullPointerException e) {
-            return "No information found for ndbno " + argument + ".";
         } catch (IOException | InterruptedException e) {
             Logger foodServerLogger = FoodServer.getFoodServerLogger();
-            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodReport::execute.", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodReportCommand::execute.", e);
         }
 
         return null;

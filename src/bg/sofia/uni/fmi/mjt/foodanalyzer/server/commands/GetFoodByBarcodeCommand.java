@@ -19,8 +19,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class GetFoodByBarcode extends Command {
-    GetFoodByBarcode(ConcurrentMap<String, Product> foodByUpcCache) {
+public class GetFoodByBarcodeCommand extends Command {
+    GetFoodByBarcodeCommand(ConcurrentMap<String, Product> foodByUpcCache) {
         super(null, null, foodByUpcCache);
     }
 
@@ -49,7 +49,7 @@ public class GetFoodByBarcode extends Command {
             RGBLuminanceSource source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
             bitmap = new BinaryBitmap(new HybridBinarizer(source));
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Exception caught in GetFoodByBarcode::decodeBarcode (ImageIO::read).", e);
+            logger.log(Level.WARNING, "Exception caught in GetFoodByBarcodeCommand::decodeBarcode (ImageIO::read).", e);
         }
 
         if (bitmap == null) {
@@ -62,13 +62,13 @@ public class GetFoodByBarcode extends Command {
             result = reader.decode(bitmap);
             return result.getText();
         } catch (NotFoundException | FormatException e) {
-            logger.log(Level.WARNING, "Exception caught in GetFoodByBarcode::decode (UPCAReader::decode).", e);
+            logger.log(Level.WARNING, "Exception caught in GetFoodByBarcodeCommand::decode (UPCAReader::decode).", e);
         }
 
         return null;
     }
 
-    public String executeHelper(String argument, boolean isPathToImg) {
+    private String processBarcode(String argument, boolean isPathToImg) {
         String barcode;
         barcode = (isPathToImg) ? decodeBarcode(argument) : argument;
 
@@ -91,7 +91,7 @@ public class GetFoodByBarcode extends Command {
             String arg = extractQueryByBarcodeArg(splittedArgs[0]);
             boolean isPathToImg = splittedArgs[0].startsWith("--img");
 
-            return executeHelper(arg, isPathToImg);
+            return processBarcode(arg, isPathToImg);
         } else {
             return "Get food by barcode was called with an invalid argument(s).";
         }

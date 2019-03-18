@@ -26,11 +26,11 @@ public class CommandFactory {
                               ConcurrentMap<String, Product> foodByUpcCache) {
         switch(commandType) {
             case GET_FOOD:
-                return new GetFood(foodByNameCache, foodByUpcCache);
+                return new GetFoodCommand(foodByNameCache, foodByUpcCache);
             case GET_FOOD_REPORT:
-                return new GetFoodReport(foodByNdbnoCache);
+                return new GetFoodReportCommand(foodByNdbnoCache);
             case GET_FOOD_BY_BARCODE:
-                return new GetFoodByBarcode(foodByUpcCache);
+                return new GetFoodByBarcodeCommand(foodByUpcCache);
             default:
                 return null;
         }

@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -14,8 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class GetFood extends Command {
-    public GetFood(ConcurrentMap<String, List<Product>> foodByNameCache, ConcurrentMap<String, Product> foodByUpcCache) {
+public class GetFoodCommand extends Command {
+    public GetFoodCommand(ConcurrentMap<String, List<Product>> foodByNameCache, ConcurrentMap<String, Product> foodByUpcCache) {
         super(foodByNameCache, null, foodByUpcCache);
     }
 
@@ -26,17 +27,26 @@ public class GetFood extends Command {
         if (foodByNameCache.containsKey(argument)) {
             List<Product> products = foodByNameCache.get(argument);
 
+            System.out.println(products.size());
+            System.out.println(products);
+
             return products.stream()
                            .map(Product::toString)
-                           .collect(Collectors.joining("\n"));
+                           .collect(Collectors.joining(";"));
         }
 
         String url = API_URL + "/search/?q=" + argument + "&api_key=" + API_KEY;
 
         try {
             JsonObject responseToJson = urlResponseToJson(url);
-            JsonArray items = responseToJson.get("list").getAsJsonObject()
-                                            .get("item").getAsJsonArray();
+            JsonElement listProperty = responseToJson.get("list");
+
+            if(listProperty == null) {
+                return "No information found for " + argument + ".";
+            }
+
+            JsonArray items = listProperty.getAsJsonObject()
+                                          .get("item").getAsJsonArray();
 
             List<Product> products = gson.fromJson(items, new TypeToken<List<Product>>() {}.getType());
             products.forEach(Product::setNameAndUpc);
@@ -53,11 +63,9 @@ public class GetFood extends Command {
             return products.stream()
                            .map(Product::toString)
                            .collect(Collectors.joining(";"));
-        } catch (NullPointerException e) {
-            return "No information found for " + argument + ".";
         } catch (IOException | InterruptedException e) {
             Logger foodServerLogger = FoodServer.getFoodServerLogger();
-            foodServerLogger.log(Level.WARNING, "Exception caught in GetFood::execute.", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodCommand::execute.", e);
         }
 
         return null;
