@@ -8,14 +8,14 @@ public class Product {
 
     private String group;
     private String name;
-    private int ndbno;
+    private String ndbno;
     private String manu;
     private String upc;
 
     public Product(String group, String name, String ndbno, String manu) {
         this.group = group;
         this.name = name;
-        this.ndbno = Integer.parseInt(ndbno);
+        this.ndbno = ndbno;
         this.manu = manu;
         setNameAndUpc();
     }
