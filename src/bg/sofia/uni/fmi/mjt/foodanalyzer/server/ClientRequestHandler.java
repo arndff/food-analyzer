@@ -4,8 +4,6 @@ import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.Command;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.CommandFactory;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidQueryTypeException;
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.UnsuccessfulQueryException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,14 +47,7 @@ public class ClientRequestHandler implements Runnable {
                 int userInputLength = userInput.length;
 
                 if (userInputLength == 2) {
-                    String result;
-
-                    try {
-                        result = executeQueryByItsType(userInput);
-                    } catch(InvalidQueryTypeException | UnsuccessfulQueryException e) {
-                        result = e.getMessage();
-                    }
-
+                    String result = executeQueryByItsType(userInput);
                     out.println(result); // send result to the client
                 } else {
                     out.println("You should pass exactly two arguments: a query and its argument.");
@@ -74,7 +65,7 @@ public class ClientRequestHandler implements Runnable {
         }
     }
 
-    private String executeQueryByItsType(String[] userInput) throws InvalidQueryTypeException, UnsuccessfulQueryException {
+    private String executeQueryByItsType(String[] userInput) {
         String queryType = userInput[0];
         String queryArg = userInput[1];
 
@@ -87,10 +78,10 @@ public class ClientRequestHandler implements Runnable {
             if (result != null) {
                 return result;
             } else {
-                throw new UnsuccessfulQueryException();
+                return "Your query wasn't executed successfully.";
             }
         } else {
-            throw new InvalidQueryTypeException();
+            return "Invalid query type.";
         }
     }
 }
