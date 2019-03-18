@@ -7,12 +7,16 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FoodClient {
 
     private static final int SERVER_PORT = 4444;
     private static final String DEFAULT_HOST = "localhost";
     private static final String QUIT_MESSAGE = "quit";
+
+    private static final Logger logger = Logger.getLogger(FoodClient.class.getName());
 
     public static void start() {
         try (Socket socket = new Socket(DEFAULT_HOST, SERVER_PORT);
@@ -24,21 +28,21 @@ public class FoodClient {
                 String message = scanner.nextLine(); // read a line from the console
 
                 if (QUIT_MESSAGE.equals(message)) {
-                    System.out.println("Closing your session...");
+                    logger.log(Level.INFO, "Closing your session...");
                     break;
                 }
 
-                System.out.println("Sending request <" + message + "> to the server...");
+                logger.log(Level.INFO, "Sending request <{0}> to the server...", message);
                 printWriter.println(message);
 
-                System.out.println("The server replied:");
+                logger.log(Level.INFO, "The server replied:");
                 String reply = bufferedReader.readLine();
                 String[] objects = reply.split(";");
                 Arrays.stream(objects)
-                      .forEach(System.out::println);
+                      .forEach(object -> logger.log(Level.INFO, object));
             }
         } catch (IOException e) {
-            System.out.println("A problem occurred. Closing your session...");
+            logger.log(Level.WARNING, "A problem occurred. Closing your session...");
         }
     }
 
