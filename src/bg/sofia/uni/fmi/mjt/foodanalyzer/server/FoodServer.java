@@ -5,7 +5,11 @@ import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -40,7 +44,9 @@ public class FoodServer {
         return foodServer;
     }
 
-    public static Logger getFoodServerLogger() { return logger; }
+    public static Logger getFoodServerLogger() {
+        return logger;
+    }
 
     private File setupFilePath(String path) {
         File file = new File(path);
@@ -58,27 +64,7 @@ public class FoodServer {
         return file;
     }
 
-    private ConcurrentMap<String, List<Product>> loadFoodByNameCache() {
-        File file = setupFilePath(FOOD_BY_NAME_CACHE_FILE);
-        ConcurrentMap<String, List<Product>> cache = new ConcurrentHashMap<>();
-
-        if (file.length() == 0) {
-            return cache;
-        }
-
-        try (FileReader in = new FileReader(file)) {
-            Gson gson = new Gson();
-            cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, List<Product>>>() {}.getType());
-        } catch (FileNotFoundException e) {
-            logger.log(Level.WARNING, "Error occurred in FoodServer::loadFoodByNameCache (file not found)", e);
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Error occurred in FoodServer::loadFoodByNameCache.", e);
-        }
-
-        return cache;
-    }
-
-    private <T> ConcurrentMap<String, T> loadSimpleCache(String path) {
+    private <T> ConcurrentMap<String, T> loadCache(String path) {
         File file = setupFilePath(path);
         ConcurrentHashMap<String, T> cache = new ConcurrentHashMap<>();
 
@@ -91,33 +77,33 @@ public class FoodServer {
             cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
         } catch (FileNotFoundException e) {
             logger.log(Level.WARNING,
-                    String.format("Error occurred in FoodServer::loadSimpleCache (%s not found)", path), e);
+                    String.format("Error occurred in FoodServer::loadCache (%s not found)", path), e);
         } catch(IOException e) {
-            logger.log(Level.WARNING, "Error occurred in FoodServer::loadSimpleCache.", e);
+            logger.log(Level.WARNING, "Error occurred in FoodServer::loadCache.", e);
         }
 
         return cache;
     }
 
-    private <T> void saveCache(String path, T cache) {
+    private <T> void saveCache(String path, ConcurrentMap<String, T> cache) {
         File file = new File(path);
 
         try (FileWriter out = new FileWriter(file, false)) {
             Gson gson = new Gson();
-            out.write(gson.toJson(cache));
+            out.write(gson.toJson(cache, new TypeToken<ConcurrentMap<String, T>>() {}.getType()));
         } catch (IOException e) {
             logger.log(Level.WARNING,
                     String.format("Error occurred in FoodServer::saveCache. Cache argument: %s", path.split("/")[1]), e);
         }
     }
 
-    public void loadAllCachesFromFiles() {
-        foodByNameCache = loadFoodByNameCache();
-        foodByNdbnoCache = loadSimpleCache(FOOD_BY_NDBNO_CACHE_FILE);
-        foodByUpcCache = loadSimpleCache(FOOD_BY_UPC_CACHE_FILE);
+    private void loadAllCachesFromFiles() {
+        foodByNameCache = loadCache(FOOD_BY_NAME_CACHE_FILE);
+        foodByNdbnoCache = loadCache(FOOD_BY_NDBNO_CACHE_FILE);
+        foodByUpcCache = loadCache(FOOD_BY_UPC_CACHE_FILE);
     }
 
-    public void saveAllCachesToFiles() {
+    private void saveAllCachesToFiles() {
         if (foodByNameCache.size() != 0) {
             saveCache(FOOD_BY_NAME_CACHE_FILE, foodByNameCache);
         }
@@ -128,7 +114,7 @@ public class FoodServer {
             saveCache(FOOD_BY_UPC_CACHE_FILE, foodByUpcCache);
         }
 
-        System.out.println("Data from all three caches have been saved successfully.");
+        logger.log(Level.INFO, "Data from all three caches have been saved successfully.");
     }
 
     public void start() {
@@ -141,10 +127,10 @@ public class FoodServer {
         cachesFolder.mkdir();
 
         loadAllCachesFromFiles();
-        System.out.println("Data from all three caches have been loaded successfully.");
+        logger.log(Level.INFO, "Data from all three caches have been loaded successfully.");
 
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
-            System.out.println("FoodServer has been started and listening for incoming requests.");
+            logger.log(Level.INFO, "FoodServer has been started and listening for incoming requests.");
             Socket clientSocket;
 
             while (true) {
@@ -152,7 +138,7 @@ public class FoodServer {
                 // When a request comes, accept() returns a socket to communicate with this client
                 try {
                     clientSocket = serverSocket.accept();
-                    System.out.println("Accepted connection request from client: " + clientSocket.getInetAddress());
+                    logger.log(Level.INFO, "Accepted connection request from client: " + clientSocket.getInetAddress());
 
                     // Want each client to be processed in a separate thread
                     // to keep the current thread free to accept() requests from new clients
@@ -160,7 +146,7 @@ public class FoodServer {
                             new ClientRequestHandler(clientSocket, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
 
                     executorService.execute(clientHandler);
-                } catch (IOException | NullPointerException e) {
+                } catch (IOException e) {
                     logger.log(Level.WARNING, "ServerSocket::accept failed.", e);
                 }
             }
@@ -168,10 +154,10 @@ public class FoodServer {
             logger.log(Level.SEVERE, "Failed to create an instance of ServerSocket.", e);
         }
 
-        System.out.println("Server is terminating...");
+        logger.log(Level.INFO, "Server is terminating...");
     }
 
     public static void main(String[] args) {
-        FoodServer.getFoodServer().start();
+        getFoodServer().start();
     }
 }
