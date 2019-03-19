@@ -57,7 +57,7 @@ public class GetFoodReportCommand extends Command {
                                        .get(0).getAsJsonObject()
                                        .get("food");
 
-            if(food == null) {
+            if (food == null) {
                 throw new NoInformationFoundException("No information found for ndbno " + argument + ".");
             }
 

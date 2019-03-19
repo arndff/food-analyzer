@@ -39,8 +39,8 @@ public class GetFoodCommand extends Command {
             JsonObject responseToJson = urlResponseToJson(url);
             JsonElement listProperty = responseToJson.get("list");
 
-            if(listProperty == null) {
-                throw new NoInformationFoundException("No information found for " + argument + ".");
+            if (listProperty == null) {
+                throw new NoInformationFoundException("No information found for food=" + argument + ".");
             }
 
             JsonArray items = listProperty.getAsJsonObject()

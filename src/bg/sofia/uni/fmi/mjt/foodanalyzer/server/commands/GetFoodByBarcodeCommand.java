@@ -72,6 +72,7 @@ public class GetFoodByBarcodeCommand extends Command {
 
     private String processBarcode(String argument, boolean isPathToImg)
             throws InvalidBarcodeArgumentsException, NoInformationFoundException {
+
         String barcode;
         barcode = (isPathToImg) ? decodeBarcode(argument) : argument;
 
