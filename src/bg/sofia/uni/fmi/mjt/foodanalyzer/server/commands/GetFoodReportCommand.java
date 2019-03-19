@@ -2,6 +2,7 @@ package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -42,7 +43,7 @@ public class GetFoodReportCommand extends Command {
     }
 
     @Override
-    public String execute(String argument) {
+    public String execute(String argument) throws NoInformationFoundException {
         if (foodByNdbnoCache.containsKey(argument)) {
             return foodByNdbnoCache.get(argument).toString();
         }
@@ -57,7 +58,7 @@ public class GetFoodReportCommand extends Command {
                                        .get("food");
 
             if(food == null) {
-                return "No information found for ndbno " + argument + ".";
+                throw new NoInformationFoundException("No information found for ndbno " + argument + ".");
             }
 
             Report report = createReportObject(food.getAsJsonObject());

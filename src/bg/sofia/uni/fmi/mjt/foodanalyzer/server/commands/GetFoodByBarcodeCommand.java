@@ -2,6 +2,8 @@ package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidBarcodeArgumentsException;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.FormatException;
 import com.google.zxing.NotFoundException;
@@ -68,7 +70,8 @@ public class GetFoodByBarcodeCommand extends Command {
         return null;
     }
 
-    private String processBarcode(String argument, boolean isPathToImg) {
+    private String processBarcode(String argument, boolean isPathToImg)
+            throws InvalidBarcodeArgumentsException, NoInformationFoundException {
         String barcode;
         barcode = (isPathToImg) ? decodeBarcode(argument) : argument;
 
@@ -77,14 +80,14 @@ public class GetFoodByBarcodeCommand extends Command {
                 return foodByUpcCache.get(barcode).toString();
             }
         } else {
-            return "Invalid upc or image path.";
+            throw new InvalidBarcodeArgumentsException();
         }
 
-        return "No product with this barcode=" + barcode + " has been found.";
+        throw new NoInformationFoundException("No product with this barcode=" + barcode + " has been found.");
     }
 
     @Override
-    public String execute(String argument) {
+    public String execute(String argument) throws InvalidBarcodeArgumentsException, NoInformationFoundException {
         String[] splittedArgs = argument.split("\\|");
 
         if (validateQueryByBarcodeArg(splittedArgs[0])) {
@@ -93,7 +96,7 @@ public class GetFoodByBarcodeCommand extends Command {
 
             return processBarcode(arg, isPathToImg);
         } else {
-            return "Get food by barcode was called with an invalid argument(s).";
+            throw new InvalidBarcodeArgumentsException();
         }
     }
 }

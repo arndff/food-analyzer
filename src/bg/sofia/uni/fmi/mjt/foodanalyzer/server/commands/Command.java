@@ -2,6 +2,8 @@ package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidBarcodeArgumentsException;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -40,5 +42,5 @@ public abstract class Command {
         return parser.parse(response).getAsJsonObject();
     }
 
-    public abstract String execute(String argument);
+    public abstract String execute(String argument) throws InvalidBarcodeArgumentsException, NoInformationFoundException;
 }

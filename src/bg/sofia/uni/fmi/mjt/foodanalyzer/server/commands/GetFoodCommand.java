@@ -2,6 +2,7 @@ package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -21,14 +22,11 @@ public class GetFoodCommand extends Command {
     }
 
     @Override
-    public String execute(String argument) {
+    public String execute(String argument) throws NoInformationFoundException {
         Gson gson = new Gson();
 
         if (foodByNameCache.containsKey(argument)) {
             List<Product> products = foodByNameCache.get(argument);
-
-            System.out.println(products.size());
-            System.out.println(products);
 
             return products.stream()
                            .map(Product::toString)
@@ -42,7 +40,7 @@ public class GetFoodCommand extends Command {
             JsonElement listProperty = responseToJson.get("list");
 
             if(listProperty == null) {
-                return "No information found for " + argument + ".";
+                throw new NoInformationFoundException("No information found for " + argument + ".");
             }
 
             JsonArray items = listProperty.getAsJsonObject()
