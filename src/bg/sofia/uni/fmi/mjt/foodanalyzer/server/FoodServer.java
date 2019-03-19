@@ -121,7 +121,7 @@ public class FoodServer {
     public void start() {
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
 
-        // the method inside run() is going to be executed after the server is terminated
+        // FoodServer::saveAllCachesToFiles is going to be executed after the server is terminated
         Runtime.getRuntime().addShutdownHook(new Thread(this::saveAllCachesToFiles));
 
         File cachesFolder = new File(CACHES_FOLDER);
