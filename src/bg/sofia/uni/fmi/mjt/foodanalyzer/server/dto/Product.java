@@ -66,7 +66,7 @@ public class Product {
         }
 
         Product product = (Product) o;
-        return ndbno == product.ndbno;
+        return ndbno.equals(product.ndbno);
     }
 
     @Override
