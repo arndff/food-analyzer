@@ -66,7 +66,7 @@ public class FoodServer {
 
     private <T> ConcurrentMap<String, T> loadCache(String path) {
         File file = setupFilePath(path);
-        ConcurrentHashMap<String, T> cache = new ConcurrentHashMap<>();
+        ConcurrentMap<String, T> cache = new ConcurrentHashMap<>();
 
         if (file.length() == 0) {
             return cache;
@@ -78,19 +78,19 @@ public class FoodServer {
         } catch (FileNotFoundException e) {
             logger.log(Level.WARNING,
                     String.format("Error occurred in FoodServer::loadCache (%s not found)", path), e);
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.log(Level.WARNING, "Error occurred in FoodServer::loadCache.", e);
         }
 
         return cache;
     }
-
+    
     private <T> void saveCache(String path, ConcurrentMap<String, T> cache) {
         File file = new File(path);
 
         try (FileWriter out = new FileWriter(file, false)) {
             Gson gson = new Gson();
-            out.write(gson.toJson(cache, new TypeToken<ConcurrentMap<String, T>>() {}.getType()));
+            out.write(gson.toJson(cache));
         } catch (IOException e) {
             logger.log(Level.WARNING,
                     String.format("Error occurred in FoodServer::saveCache. Cache argument: %s", path.split("/")[1]), e);
