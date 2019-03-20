@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -64,7 +65,7 @@ public class FoodServer {
         return file;
     }
 
-    private <T> ConcurrentMap<String, T> loadCache(String path) {
+    private <T> ConcurrentMap<String, T> loadCache(String path, Type myType) {
         File file = setupFilePath(path);
         ConcurrentMap<String, T> cache = new ConcurrentHashMap<>();
 
@@ -76,7 +77,11 @@ public class FoodServer {
 
         try (FileReader in = new FileReader(file)) {
             Gson gson = new Gson();
-            cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
+            // There's an issue with this approach caused by the generics, imho.
+            // cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
+
+            // Solution to the aforementioned issue using getParameterized method which wasn't available in GSON 2.6.2!
+            cache = gson.fromJson(in, TypeToken.getParameterized(ConcurrentMap.class, String.class, myType).getType());
         } catch (FileNotFoundException e) {
             logger.log(Level.WARNING, error + "(" + path + " not found)", e);
         } catch (IOException e) {
@@ -99,9 +104,9 @@ public class FoodServer {
     }
 
     private void loadAllCachesFromFiles() {
-        foodByNameCache = loadCache(FOOD_BY_NAME_CACHE_FILE);
-        foodByNdbnoCache = loadCache(FOOD_BY_NDBNO_CACHE_FILE);
-        foodByUpcCache = loadCache(FOOD_BY_UPC_CACHE_FILE);
+        foodByNameCache = loadCache(FOOD_BY_NAME_CACHE_FILE, new TypeToken<List<Product>>(){}.getType());
+        foodByNdbnoCache = loadCache(FOOD_BY_NDBNO_CACHE_FILE, Report.class);
+        foodByUpcCache = loadCache(FOOD_BY_UPC_CACHE_FILE, Product.class);
     }
 
     private void saveAllCachesToFiles() {
