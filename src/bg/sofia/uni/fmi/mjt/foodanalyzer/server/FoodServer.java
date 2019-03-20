@@ -81,6 +81,7 @@ public class FoodServer {
             // cache = gson.fromJson(in, new TypeToken<ConcurrentMap<String, T>>() {}.getType());
 
             // Solution to the aforementioned issue using getParameterized method which wasn't available in GSON 2.6.2!
+            // Project's GSON version: 2.8.5
             cache = gson.fromJson(in, TypeToken.getParameterized(ConcurrentMap.class, String.class, myType).getType());
         } catch (FileNotFoundException e) {
             logger.log(Level.WARNING, error + "(" + path + " not found)", e);
