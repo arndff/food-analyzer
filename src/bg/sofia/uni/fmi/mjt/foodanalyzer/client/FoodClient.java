@@ -18,7 +18,7 @@ public class FoodClient {
 
     private static final Logger logger = Logger.getLogger(FoodClient.class.getName());
 
-    public static void start() {
+    private void start() {
         try (Socket socket = new Socket(DEFAULT_HOST, SERVER_PORT);
              PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -47,6 +47,7 @@ public class FoodClient {
     }
 
     public static void main(String[] args) {
-        start();
+        FoodClient foodClient = new FoodClient();
+        foodClient.start();
     }
 }
