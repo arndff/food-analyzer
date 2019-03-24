@@ -1,6 +1,5 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidBarcodeArgumentsException;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.io.File;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class GetFoodByBarcodeCommand extends Command {
     GetFoodByBarcodeCommand(ConcurrentMap<String, Product> foodByUpcCache) {
@@ -43,15 +41,13 @@ public class GetFoodByBarcodeCommand extends Command {
         BinaryBitmap bitmap = null;
         Result result = null;
 
-        Logger logger = FoodServer.getFoodServerLogger();
-
         try {
             image = ImageIO.read(file);
             int[] pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
             RGBLuminanceSource source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
             bitmap = new BinaryBitmap(new HybridBinarizer(source));
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Exception caught in GetFoodByBarcodeCommand::decodeBarcode (ImageIO::read).", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodByBarcodeCommand::decodeBarcode (ImageIO::read).", e);
         }
 
         if (bitmap == null) {
@@ -64,7 +60,7 @@ public class GetFoodByBarcodeCommand extends Command {
             result = reader.decode(bitmap);
             return result.getText();
         } catch (NotFoundException | FormatException e) {
-            logger.log(Level.WARNING, "Exception caught in GetFoodByBarcodeCommand::decode (UPCAReader::decode).", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodByBarcodeCommand::decode (UPCAReader::decode).", e);
         }
 
         return null;

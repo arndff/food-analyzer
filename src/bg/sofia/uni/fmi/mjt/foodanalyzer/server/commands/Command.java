@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidBarcodeArgumentsException;
@@ -14,6 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
 
 public abstract class Command {
     protected final ConcurrentMap<String, List<Product>> foodByNameCache;
@@ -22,6 +24,8 @@ public abstract class Command {
 
     protected static final String API_URL = "https://api.nal.usda.gov/ndb";
     protected static final String API_KEY = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
+
+    protected static final Logger foodServerLogger = FoodServer.getFoodServerLogger();
 
     Command(ConcurrentMap<String, List<Product>> foodByNameCache,
             ConcurrentMap<String, Report> foodByNdbnoCache,

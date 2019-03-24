@@ -1,6 +1,5 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
 import com.google.gson.Gson;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class GetFoodCommand extends Command {
@@ -62,7 +60,6 @@ public class GetFoodCommand extends Command {
                            .map(Product::toString)
                            .collect(Collectors.joining(";"));
         } catch (IOException | InterruptedException e) {
-            Logger foodServerLogger = FoodServer.getFoodServerLogger();
             foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodCommand::execute.", e);
         }
 

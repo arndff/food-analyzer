@@ -35,15 +35,7 @@ public class FoodServer {
     private ConcurrentMap<String, Report> foodByNdbnoCache;
     private ConcurrentMap<String, Product> foodByUpcCache;
 
-    protected static final Logger logger = Logger.getLogger(FoodServer.class.getName());
-
-    private static final FoodServer foodServer = new FoodServer();
-
-    private FoodServer() {}
-
-    public static FoodServer getFoodServer() {
-        return foodServer;
-    }
+    private static final Logger logger = Logger.getLogger(FoodServer.class.getName());
 
     public static Logger getFoodServerLogger() {
         return logger;
@@ -124,7 +116,7 @@ public class FoodServer {
         logger.log(Level.INFO, "Data from all three caches have been saved successfully.");
     }
 
-    public void start() {
+    private void start() {
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_EXECUTOR_THREADS);
 
         // FoodServer::saveAllCachesToFiles is going to be executed after the server is terminated
@@ -165,6 +157,7 @@ public class FoodServer {
     }
 
     public static void main(String[] args) {
-        getFoodServer().start();
+        FoodServer foodServer = new FoodServer();
+        foodServer.start();
     }
 }

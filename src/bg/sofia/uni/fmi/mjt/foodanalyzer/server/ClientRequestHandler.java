@@ -17,8 +17,7 @@ import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-
-import static bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServer.logger;
+import java.util.logging.Logger;
 
 public class ClientRequestHandler implements Runnable {
 
@@ -27,6 +26,8 @@ public class ClientRequestHandler implements Runnable {
     private final ConcurrentMap<String, List<Product>> foodByNameCache;
     private final ConcurrentMap<String, Report> foodByNdbnoCache;
     private final ConcurrentMap<String, Product> foodByUpcCache;
+
+    private static final Logger foodServerLogger = FoodServer.getFoodServerLogger();
 
     public ClientRequestHandler(Socket socket,
                                 ConcurrentMap<String, List<Product>> foodByNameCache,
@@ -56,7 +57,7 @@ public class ClientRequestHandler implements Runnable {
                     try {
                         result = executeQueryByItsType(userInput);
                     } catch (Exception e) {
-                        logger.log(Level.INFO, e.getMessage());
+                        foodServerLogger.log(Level.INFO, e.getMessage());
                         result = e.getMessage();
                     }
 
@@ -66,12 +67,12 @@ public class ClientRequestHandler implements Runnable {
                 }
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "A problem occurred in ClientRequestHandler::run.", e);
+            foodServerLogger.log(Level.SEVERE, "A problem occurred in ClientRequestHandler::run.", e);
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                logger.log(Level.SEVERE,
+                foodServerLogger.log(Level.SEVERE,
                         "A problem occurred while trying to close the socket in ClientRequestHandler::run", e);
             }
         }
