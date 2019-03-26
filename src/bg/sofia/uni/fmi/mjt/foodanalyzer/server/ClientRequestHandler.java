@@ -84,7 +84,7 @@ public class ClientRequestHandler implements Runnable {
         String queryType = userInput[0];
         String queryArg = userInput[1];
 
-        CommandFactory commandFactory = CommandFactory.getCommandFactory();
+        CommandFactory commandFactory = CommandFactory.getInstance();
         Command cmd = commandFactory.getCommand(queryType, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
 
         if (cmd != null) {

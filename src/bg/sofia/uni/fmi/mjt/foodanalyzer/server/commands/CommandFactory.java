@@ -16,7 +16,7 @@ public class CommandFactory {
 
     private CommandFactory() {}
 
-    public static CommandFactory getCommandFactory() {
+    public static CommandFactory getInstance() {
         return commandFactory;
     }
 
