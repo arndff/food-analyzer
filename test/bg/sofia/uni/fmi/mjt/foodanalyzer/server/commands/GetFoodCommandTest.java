@@ -51,7 +51,7 @@ public class GetFoodCommandTest {
     }
 
     @Test
-    public void testExecuteCommandWithSingleObject() throws Exception {
+    public void testExecuteCommandWithSingleObject() throws NoInformationFoundException {
         foodCommand = new GetFoodCommand(foodByNameCacheMock, foodByUpcCache) {
             @Override
             protected JsonObject urlResponseToJson(String url) {
