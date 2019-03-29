@@ -21,8 +21,6 @@ public class GetFoodCommand extends Command {
 
     @Override
     public String execute(String argument) throws NoInformationFoundException {
-        Gson gson = new Gson();
-
         if (foodByNameCache.containsKey(argument)) {
             List<Product> products = foodByNameCache.get(argument);
 
@@ -43,6 +41,8 @@ public class GetFoodCommand extends Command {
 
             JsonArray items = listProperty.getAsJsonObject()
                                           .get("item").getAsJsonArray();
+
+            Gson gson = new Gson();
 
             List<Product> products = gson.fromJson(items, new TypeToken<List<Product>>() {}.getType());
             products.forEach(Product::setNameAndUpc);
