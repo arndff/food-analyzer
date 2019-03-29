@@ -27,7 +27,7 @@ public class GetFoodReportCommandTest {
     private String response;
 
     @Test(expected = NoInformationFoundException.class)
-    public void testExecuteCommandWithNoInformationFoundException() throws NoInformationFoundException {
+    public void testExecuteMethodWithNoInformationFoundException() throws NoInformationFoundException {
         foodReportCommand = new GetFoodReportCommand(foodByNdbnoCacheMock) {
           @Override
           protected JsonObject urlResponseToJson(String url) {
@@ -40,7 +40,7 @@ public class GetFoodReportCommandTest {
     }
 
     @Test
-    public void testExecuteCommandRegularCase() throws NoInformationFoundException {
+    public void testExecuteMethodRegularCase() throws NoInformationFoundException {
         foodReportCommand = new GetFoodReportCommand(foodByNdbnoCacheMock) {
           @Override
           protected JsonObject urlResponseToJson(String url) {

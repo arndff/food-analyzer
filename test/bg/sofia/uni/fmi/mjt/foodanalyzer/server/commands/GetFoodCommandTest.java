@@ -38,7 +38,7 @@ public class GetFoodCommandTest {
     private String actual;
 
     @Test(expected = NoInformationFoundException.class)
-    public void testExecuteCommandWithNoInformationFoundException() throws NoInformationFoundException {
+    public void testExecuteMethodWithNoInformationFoundException() throws NoInformationFoundException {
         foodCommand = new GetFoodCommand(foodByNameCacheMock, foodByUpcCache) {
             @Override
             protected JsonObject urlResponseToJson(String url) {
@@ -51,7 +51,7 @@ public class GetFoodCommandTest {
     }
 
     @Test
-    public void testExecuteCommandWithSingleObject() throws NoInformationFoundException {
+    public void testExecuteMethodWithSingleObject() throws NoInformationFoundException {
         foodCommand = new GetFoodCommand(foodByNameCacheMock, foodByUpcCache) {
             @Override
             protected JsonObject urlResponseToJson(String url) {
@@ -84,7 +84,7 @@ public class GetFoodCommandTest {
     }
 
     @Test
-    public void testExecuteCommandWithMultipleObjects() throws NoInformationFoundException {
+    public void testExecuteMethodWithMultipleObjects() throws NoInformationFoundException {
         foodCommand = new GetFoodCommand(foodByNameCacheMock, foodByUpcCache) {
           @Override
           protected JsonObject urlResponseToJson(String url) {
