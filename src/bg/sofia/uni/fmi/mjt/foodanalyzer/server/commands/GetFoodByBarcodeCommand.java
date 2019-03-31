@@ -69,15 +69,14 @@ public class GetFoodByBarcodeCommand extends Command {
     private String processBarcode(String argument, boolean isPathToImg)
             throws InvalidBarcodeArgumentsException, NoInformationFoundException {
 
-        String barcode;
-        barcode = (isPathToImg) ? decodeBarcode(argument) : argument;
+        String barcode = (isPathToImg) ? decodeBarcode(argument) : argument;
 
         if (barcode != null) {
             if (foodByUpcCache.containsKey(barcode)) {
                 return foodByUpcCache.get(barcode).toString();
             }
         } else {
-            throw new InvalidBarcodeArgumentsException();
+            throw new InvalidBarcodeArgumentsException("Get food by barcode was called with an invalid path to the barcode image file.");
         }
 
         throw new NoInformationFoundException("No product with this barcode=" + barcode + " has been found.");
@@ -93,7 +92,7 @@ public class GetFoodByBarcodeCommand extends Command {
 
             return processBarcode(arg, isPathToImg);
         } else {
-            throw new InvalidBarcodeArgumentsException();
+            throw new InvalidBarcodeArgumentsException("Get food by barcode was called with an invalid argument.");
         }
     }
 }
