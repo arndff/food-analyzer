@@ -70,7 +70,7 @@ public class GetFoodByBarcodeCommandTest {
 
         expected = product.toString();
         actual = foodByBarcodeCommand.execute("--upc=<009800146130>");
-        assertEquals(ERROR + "after testing processBarcode with --upc.", expected, actual);
+        assertEquals(ERROR + "after testing GetFoodByBarcode::processBarcode with --upc.", expected, actual);
     }
 
     @Test
@@ -84,6 +84,6 @@ public class GetFoodByBarcodeCommandTest {
 
         expected = product.toString();
         actual = foodByBarcodeCommand.execute("--img=<" + filePath + ">");
-        assertEquals(ERROR + "after testing processBarcode with --img.", expected, actual);
+        assertEquals(ERROR + "after testing GetFoodByBarcode::processBarcode with --img.", expected, actual);
     }
 }
