@@ -51,7 +51,7 @@ public class GetFoodByBarcodeCommandTest {
     public void testProcessBarcodeWithNoInformationFoundException()
             throws InvalidBarcodeArgumentsException, NoInformationFoundException {
 
-        foodByBarcodeCommand.execute("--upc=<777>");
+        foodByBarcodeCommand.execute("--upc=<777777777777>");
     }
 
     @Test(expected = InvalidBarcodeArgumentsException.class)
@@ -80,8 +80,10 @@ public class GetFoodByBarcodeCommandTest {
         when(foodByUpcCacheMock.containsKey(product.getUpc())).thenReturn(true);
         when(foodByUpcCacheMock.get(product.getUpc())).thenReturn(product);
 
+        String filePath = System.getProperty("user.dir") + "/resources/raffaello_barcode.gif";
+
         expected = product.toString();
-        actual = foodByBarcodeCommand.execute("--img=</home/arndff/Downloads/raffaello_barcode.gif>");
+        actual = foodByBarcodeCommand.execute("--img=<" + filePath + ">");
         assertEquals(ERROR + "after testing processBarcode with --img.", expected, actual);
     }
 }

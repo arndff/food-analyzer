@@ -31,12 +31,12 @@ public class GetFoodReportCommandTest {
         foodReportCommand = new GetFoodReportCommand(foodByNdbnoCacheMock) {
           @Override
           protected JsonObject urlResponseToJson(String url) {
-              response = "{\"foods\":[{\"error\":\"No data for ndbno 7777777\"}],\"count\":1,\"notfound\":1,\"api\":2.0}";
+              response = "{\"foods\":[{\"error\":\"No data for ndbno 77777777\"}],\"count\":1,\"notfound\":1,\"api\":2.0}";
               return parser.parse(response).getAsJsonObject();
           }
         };
 
-        foodReportCommand.execute("7777777");
+        foodReportCommand.execute("77777777");
     }
 
     @Test
