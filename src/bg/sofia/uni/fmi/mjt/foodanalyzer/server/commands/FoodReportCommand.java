@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
-public class GetFoodReportCommand extends Command {
+public class FoodReportCommand extends AbstractCommand {
 
-    public GetFoodReportCommand(ConcurrentMap<String, Report> foodByNdbnoCache) {
+    public FoodReportCommand(ConcurrentMap<String, Report> foodByNdbnoCache) {
         super(null, foodByNdbnoCache, null);
     }
 
@@ -66,7 +66,7 @@ public class GetFoodReportCommand extends Command {
 
             return report.toString();
         } catch (IOException | InterruptedException e) {
-            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodReportCommand::execute.", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in FoodReportCommand::execute.", e);
         }
 
         return null;

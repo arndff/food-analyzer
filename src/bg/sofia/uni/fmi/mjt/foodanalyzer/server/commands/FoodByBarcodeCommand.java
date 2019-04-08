@@ -19,8 +19,8 @@ import java.io.File;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
-public class GetFoodByBarcodeCommand extends Command {
-    GetFoodByBarcodeCommand(ConcurrentMap<String, Product> foodByUpcCache) {
+public class FoodByBarcodeCommand extends AbstractCommand {
+    FoodByBarcodeCommand(ConcurrentMap<String, Product> foodByUpcCache) {
         super(null, null, foodByUpcCache);
     }
 
@@ -47,7 +47,7 @@ public class GetFoodByBarcodeCommand extends Command {
             RGBLuminanceSource source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
             bitmap = new BinaryBitmap(new HybridBinarizer(source));
         } catch (IOException e) {
-            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodByBarcodeCommand::decodeBarcode (ImageIO::read).", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in FoodByBarcodeCommand::decodeBarcode (ImageIO::read).", e);
         }
 
         if (bitmap == null) {
@@ -60,7 +60,7 @@ public class GetFoodByBarcodeCommand extends Command {
             result = reader.decode(bitmap);
             return result.getText();
         } catch (NotFoundException | FormatException e) {
-            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodByBarcodeCommand::decode (UPCAReader::decode).", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in FoodByBarcodeCommand::decode (UPCAReader::decode).", e);
         }
 
         return null;

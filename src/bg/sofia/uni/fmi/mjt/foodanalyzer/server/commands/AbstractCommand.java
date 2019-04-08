@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
-public abstract class Command {
+public abstract class AbstractCommand {
     protected final ConcurrentMap<String, List<Product>> foodByNameCache;
     protected final ConcurrentMap<String, Report> foodByNdbnoCache;
     protected final ConcurrentMap<String, Product> foodByUpcCache;
@@ -27,9 +27,9 @@ public abstract class Command {
 
     protected static final Logger foodServerLogger = FoodServer.getFoodServerLogger();
 
-    Command(ConcurrentMap<String, List<Product>> foodByNameCache,
-            ConcurrentMap<String, Report> foodByNdbnoCache,
-            ConcurrentMap<String, Product> foodByUpcCache) {
+    AbstractCommand(ConcurrentMap<String, List<Product>> foodByNameCache,
+                    ConcurrentMap<String, Report> foodByNdbnoCache,
+                    ConcurrentMap<String, Product> foodByUpcCache) {
         this.foodByNameCache = foodByNameCache;
         this.foodByNdbnoCache = foodByNdbnoCache;
         this.foodByUpcCache = foodByUpcCache;

@@ -20,17 +20,17 @@ public class CommandFactory {
         return commandFactory;
     }
 
-    public Command getCommand(String commandType,
-                              ConcurrentMap<String, List<Product>> foodByNameCache,
-                              ConcurrentMap<String, Report> foodByNdbnoCache,
-                              ConcurrentMap<String, Product> foodByUpcCache) {
+    public AbstractCommand getCommand(String commandType,
+                                      ConcurrentMap<String, List<Product>> foodByNameCache,
+                                      ConcurrentMap<String, Report> foodByNdbnoCache,
+                                      ConcurrentMap<String, Product> foodByUpcCache) {
         switch(commandType) {
             case GET_FOOD:
-                return new GetFoodCommand(foodByNameCache, foodByUpcCache);
+                return new FoodCommand(foodByNameCache, foodByUpcCache);
             case GET_FOOD_REPORT:
-                return new GetFoodReportCommand(foodByNdbnoCache);
+                return new FoodReportCommand(foodByNdbnoCache);
             case GET_FOOD_BY_BARCODE:
-                return new GetFoodByBarcodeCommand(foodByUpcCache);
+                return new FoodByBarcodeCommand(foodByUpcCache);
             default:
                 return null;
         }

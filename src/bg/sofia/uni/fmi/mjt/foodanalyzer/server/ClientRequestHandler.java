@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.Command;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.AbstractCommand;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.CommandFactory;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
@@ -85,7 +85,7 @@ public class ClientRequestHandler implements Runnable {
         String queryArg = userInput[1];
 
         CommandFactory commandFactory = CommandFactory.getInstance();
-        Command cmd = commandFactory.getCommand(queryType, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
+        AbstractCommand cmd = commandFactory.getCommand(queryType, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
 
         if (cmd != null) {
             try {

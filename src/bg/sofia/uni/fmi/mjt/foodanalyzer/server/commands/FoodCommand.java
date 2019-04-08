@@ -14,8 +14,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class GetFoodCommand extends Command {
-    public GetFoodCommand(ConcurrentMap<String, List<Product>> foodByNameCache, ConcurrentMap<String, Product> foodByUpcCache) {
+public class FoodCommand extends AbstractCommand {
+    public FoodCommand(ConcurrentMap<String, List<Product>> foodByNameCache, ConcurrentMap<String, Product> foodByUpcCache) {
         super(foodByNameCache, null, foodByUpcCache);
     }
 
@@ -60,7 +60,7 @@ public class GetFoodCommand extends Command {
                            .map(Product::toString)
                            .collect(Collectors.joining(";"));
         } catch (IOException | InterruptedException e) {
-            foodServerLogger.log(Level.WARNING, "Exception caught in GetFoodCommand::execute.", e);
+            foodServerLogger.log(Level.WARNING, "Exception caught in FoodCommand::execute.", e);
         }
 
         return null;

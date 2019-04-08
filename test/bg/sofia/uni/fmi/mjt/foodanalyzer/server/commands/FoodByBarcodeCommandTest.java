@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GetFoodByBarcodeCommandTest {
+public class FoodByBarcodeCommandTest {
     private Product product = new Product("Branded Food Products Database",
             "RAFFAELLO, ALMOND COCONUT TREAT, UPC: 009800146130",
             "45142036",
@@ -25,7 +25,7 @@ public class GetFoodByBarcodeCommandTest {
     @Mock
     ConcurrentMap<String, Product> foodByUpcCacheMock = new ConcurrentHashMap<>();
 
-    private GetFoodByBarcodeCommand foodByBarcodeCommand;
+    private FoodByBarcodeCommand foodByBarcodeCommand;
 
     private String expected;
     private String actual;
@@ -33,7 +33,7 @@ public class GetFoodByBarcodeCommandTest {
 
     @Before
     public void setup() {
-        foodByBarcodeCommand = new GetFoodByBarcodeCommand(foodByUpcCacheMock);
+        foodByBarcodeCommand = new FoodByBarcodeCommand(foodByUpcCacheMock);
     }
 
     @Test(expected = InvalidBarcodeArgumentsException.class)
@@ -71,7 +71,7 @@ public class GetFoodByBarcodeCommandTest {
         expected = product.toString();
         actual = foodByBarcodeCommand.execute("--upc=<009800146130>");
         // actual = foodByBarcodeCommand.execute("--upc=<009800146130>" + "|" + "--img</resources/raffaello_barcode.gif");
-        assertEquals(ERROR + "after testing GetFoodByBarcodeCommand::processBarcode with --upc.", expected, actual);
+        assertEquals(ERROR + "after testing FoodByBarcodeCommand::processBarcode with --upc.", expected, actual);
     }
 
     @Test
@@ -85,6 +85,6 @@ public class GetFoodByBarcodeCommandTest {
 
         expected = product.toString();
         actual = foodByBarcodeCommand.execute("--img=<" + filePath + ">");
-        assertEquals(ERROR + "after testing GetFoodByBarcodeCommand::processBarcode with --img.", expected, actual);
+        assertEquals(ERROR + "after testing FoodByBarcodeCommand::processBarcode with --img.", expected, actual);
     }
 }
