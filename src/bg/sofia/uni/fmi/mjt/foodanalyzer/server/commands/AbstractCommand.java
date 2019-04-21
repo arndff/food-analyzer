@@ -18,14 +18,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 public abstract class AbstractCommand {
-    protected final ConcurrentMap<String, List<Product>> foodByNameCache;
-    protected final ConcurrentMap<String, Report> foodByNdbnoCache;
-    protected final ConcurrentMap<String, Product> foodByUpcCache;
+    final ConcurrentMap<String, List<Product>> foodByNameCache;
+    final ConcurrentMap<String, Report> foodByNdbnoCache;
+    final ConcurrentMap<String, Product> foodByUpcCache;
 
-    protected static final String API_URL = "https://api.nal.usda.gov/ndb";
-    protected static final String API_KEY = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
+    static final String API_URL = "https://api.nal.usda.gov/ndb";
+    static final String API_KEY = "yqVQElHgqao3jzD9KbtKeygI2UqpOf41XYbNpcd9";
 
-    protected static final Logger foodServerLogger = FoodServer.getFoodServerLogger();
+    static final Logger foodServerLogger = FoodServer.getFoodServerLogger();
 
     AbstractCommand(ConcurrentMap<String, List<Product>> foodByNameCache,
                     ConcurrentMap<String, Report> foodByNdbnoCache,

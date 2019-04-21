@@ -11,8 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 public class FoodReportCommand extends AbstractCommand {
-
-    public FoodReportCommand(ConcurrentMap<String, Report> foodByNdbnoCache) {
+    FoodReportCommand(ConcurrentMap<String, Report> foodByNdbnoCache) {
         super(null, foodByNdbnoCache, null);
     }
 

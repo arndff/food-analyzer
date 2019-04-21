@@ -15,7 +15,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class FoodCommand extends AbstractCommand {
-    public FoodCommand(ConcurrentMap<String, List<Product>> foodByNameCache, ConcurrentMap<String, Product> foodByUpcCache) {
+    FoodCommand(ConcurrentMap<String, List<Product>> foodByNameCache, ConcurrentMap<String, Product> foodByUpcCache) {
         super(foodByNameCache, null, foodByUpcCache);
     }
 

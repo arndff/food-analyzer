@@ -29,10 +29,10 @@ public class ClientRequestHandler implements Runnable {
 
     private static final Logger foodServerLogger = FoodServer.getFoodServerLogger();
 
-    public ClientRequestHandler(Socket socket,
-                                ConcurrentMap<String, List<Product>> foodByNameCache,
-                                ConcurrentMap<String, Report> foodByNdbnoCache,
-                                ConcurrentMap<String, Product> foodByUpcCache) {
+    ClientRequestHandler(Socket socket,
+                         ConcurrentMap<String, List<Product>> foodByNameCache,
+                         ConcurrentMap<String, Report> foodByNdbnoCache,
+                         ConcurrentMap<String, Product> foodByUpcCache) {
         this.socket = socket;
 
         this.foodByNameCache = foodByNameCache;
