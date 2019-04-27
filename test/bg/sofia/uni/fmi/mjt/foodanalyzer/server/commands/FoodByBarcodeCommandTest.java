@@ -54,7 +54,7 @@ public class FoodByBarcodeCommandTest {
                 "Ferrero U.S.A., Incorporated");
 
         product.setNameAndUpc();
-        foodByUpcCache.putIfAbsent(product.getUpc(), product);
+        foodByUpcCache.put(product.getUpc(), product);
 
         String expected = product.toString();
         String actual = foodByBarcodeCommand.execute("--upc=<009800146130>");

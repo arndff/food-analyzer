@@ -66,8 +66,8 @@ public class FoodCommandTest {
                 "RAFFAELLO, ALMOND COCONUT TREAT, UPC: 009800146130",
                 "45142036",
                 "Ferrero U.S.A., Incorporated"));
-        ProductList productList = new ProductList(item);
-        ProductResponse productResponse = new ProductResponse(productList);
+
+        ProductResponse productResponse = new ProductResponse(new ProductList(item));
         String jsonResponse = gson.toJson(productResponse, ProductResponse.class);
 
         when(httpClientMock.send(Mockito.any(HttpRequest.class), ArgumentMatchers.<HttpResponse.BodyHandler<String>>any()))
@@ -100,8 +100,7 @@ public class FoodCommandTest {
                 "Bueno Alimentos, S.A.");
 
         List<Product> item = List.of(p1, p2, p3);
-        ProductList productList = new ProductList(item);
-        ProductResponse productResponse = new ProductResponse(productList);
+        ProductResponse productResponse = new ProductResponse(new ProductList(item));
         String jsonResponse = gson.toJson(productResponse, ProductResponse.class);
 
         when(httpClientMock.send(Mockito.any(HttpRequest.class), ArgumentMatchers.<HttpResponse.BodyHandler<String>>any()))
