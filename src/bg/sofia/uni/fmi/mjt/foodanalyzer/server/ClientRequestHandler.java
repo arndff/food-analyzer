@@ -17,7 +17,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClientRequestHandler implements Runnable {
-
     private Socket socket;
     private final FoodServerCache cache;
 

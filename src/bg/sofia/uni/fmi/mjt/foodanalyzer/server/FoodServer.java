@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FoodServer {
-
     private static final int SERVER_PORT = 4444;
     private static final int MAX_EXECUTOR_THREADS = 20;
 

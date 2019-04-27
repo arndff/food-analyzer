@@ -11,7 +11,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FoodClient {
-
     private static final int SERVER_PORT = 4444;
     private static final String DEFAULT_HOST = "localhost";
     private static final String QUIT_MESSAGE = "quit";

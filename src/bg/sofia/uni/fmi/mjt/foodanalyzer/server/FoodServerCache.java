@@ -18,7 +18,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FoodServerCache {
-
     private static final String CACHES_FOLDER = "data/";
 
     private static final String FOOD_BY_NAME_CACHE_FILE = "data/foodByName.json";

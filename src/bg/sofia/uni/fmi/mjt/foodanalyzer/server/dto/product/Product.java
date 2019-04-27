@@ -3,7 +3,6 @@ package bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.product;
 import java.util.Objects;
 
 public class Product {
-
     private static final String BRANDED_FOOD_PRODUCTS = "Branded Food Products Database";
 
     private String group;
