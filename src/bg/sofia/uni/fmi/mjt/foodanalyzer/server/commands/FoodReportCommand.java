@@ -40,7 +40,7 @@ public class FoodReportCommand extends AbstractCommand {
                 throw new NoInformationFoundException("No information found for ndbno " + argument + ".");
             }
 
-            Report report = reportResponse.getList().get(0).createReportObject();
+            Report report = reportResponse.createReportObject();
 
             // Updating foodByNdbnoCache
             foodByNdbnoCache.put(argument, report);

@@ -76,7 +76,7 @@ public class FoodReportCommandTest {
         when(httpResponseMock.body()).thenReturn(jsonResponse);
 
         String argument = "45142036";
-        String expected = reportResponse.getList().get(0).createReportObject().toString();
+        String expected = reportResponse.createReportObject().toString();
         String actual = foodReportCommand.execute(argument);
 
         assertEquals(ERROR + "after running FoodReportCommand::execute with argument=45142036.", expected, actual);

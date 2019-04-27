@@ -1,5 +1,7 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.report;
 
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.entity.Report;
+
 import java.util.List;
 
 public class ReportResponse {
@@ -11,5 +13,9 @@ public class ReportResponse {
 
     public List<ReportData> getList() {
         return foods;
+    }
+
+    public Report createReportObject() {
+        return foods.get(0).createReportObject();
     }
 }

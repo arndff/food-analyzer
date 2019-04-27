@@ -7,15 +7,7 @@ import java.util.List;
 public class ReportData {
     private ReportFood food;
 
-    public ReportData(ReportFood food) {
-        this.food = food;
-    }
-
-    public ReportFood getFood() {
-        return food;
-    }
-
-    public Report createReportObject() {
+    Report createReportObject() {
         food.getDesc().setProperName();
         String name = food.getDesc().getName();
 
@@ -30,5 +22,13 @@ public class ReportData {
         double fiber = nutrients.get(4).getValue();
 
         return new Report(name, ingredients, kcal, protein, fat, carbohydrate, fiber);
+    }
+
+    public ReportData(ReportFood food) {
+        this.food = food;
+    }
+
+    public ReportFood getFood() {
+        return food;
     }
 }
