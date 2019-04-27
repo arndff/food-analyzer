@@ -1,42 +1,24 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.report.ReportResponse;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.entity.Report;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 public class FoodReportCommand extends AbstractCommand {
-    FoodReportCommand(ConcurrentMap<String, Report> foodByNdbnoCache) {
-        super(null, foodByNdbnoCache, null);
-    }
+    private ConcurrentMap<String, Report> foodByNdbnoCache;
 
-    // helper method which is used in createReportObject to set some of Report's object data members
-    private double extractSpecificNutrient(JsonArray nutrients, int index) {
-        return nutrients.get(index).getAsJsonObject()
-                        .get("value").getAsDouble();
-    }
-
-    private Report createReportObject(JsonObject food) {
-        String name = food.get("desc").getAsJsonObject()
-                          .get("name").getAsString()
-                          .split(", U")[0];
-
-        String ingredients = food.get("ing").getAsJsonObject()
-                                 .get("desc").getAsString();
-
-        JsonArray nutrients = food.get("nutrients").getAsJsonArray();
-        double kcal = extractSpecificNutrient(nutrients, 0);
-        double protein = extractSpecificNutrient(nutrients, 1);
-        double fat = extractSpecificNutrient(nutrients, 2);
-        double carbohydrate = extractSpecificNutrient(nutrients, 3);
-        double fiber = extractSpecificNutrient(nutrients, 4);
-
-        return new Report(name, ingredients, kcal, protein, fat, carbohydrate, fiber);
+    FoodReportCommand(HttpClient client, ConcurrentMap<String, Report> foodByNdbnoCache) {
+        super(client);
+        this.foodByNdbnoCache = foodByNdbnoCache;
     }
 
     @Override
@@ -46,19 +28,19 @@ public class FoodReportCommand extends AbstractCommand {
         }
 
         String url = API_URL + "/V2/reports?ndbno=" + argument + "&format=json&api_key=" + API_KEY;
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
 
         try {
-            JsonObject response = urlResponseToJson(url);
+            Gson gson = new Gson();
 
-            JsonElement food = response.getAsJsonArray("foods")
-                                       .get(0).getAsJsonObject()
-                                       .get("food");
+            String response = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            ReportResponse reportResponse = gson.fromJson(response, ReportResponse.class);
 
-            if (food == null) {
+            if (reportResponse.getList() == null) {
                 throw new NoInformationFoundException("No information found for ndbno " + argument + ".");
             }
 
-            Report report = createReportObject(food.getAsJsonObject());
+            Report report = reportResponse.getList().get(0).createReportObject();
 
             // Updating foodByNdbnoCache
             foodByNdbnoCache.put(argument, report);

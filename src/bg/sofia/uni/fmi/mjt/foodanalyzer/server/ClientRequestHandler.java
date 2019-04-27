@@ -2,8 +2,6 @@ package bg.sofia.uni.fmi.mjt.foodanalyzer.server;
 
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.AbstractCommand;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands.CommandFactory;
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidBarcodeArgumentsException;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidQueryTypeException;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
@@ -14,30 +12,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
+import java.net.http.HttpClient;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClientRequestHandler implements Runnable {
 
     private Socket socket;
-
-    private final ConcurrentMap<String, List<Product>> foodByNameCache;
-    private final ConcurrentMap<String, Report> foodByNdbnoCache;
-    private final ConcurrentMap<String, Product> foodByUpcCache;
+    private final FoodServerCache cache;
 
     private static final Logger foodServerLogger = FoodServer.getFoodServerLogger();
 
-    ClientRequestHandler(Socket socket,
-                         ConcurrentMap<String, List<Product>> foodByNameCache,
-                         ConcurrentMap<String, Report> foodByNdbnoCache,
-                         ConcurrentMap<String, Product> foodByUpcCache) {
+    ClientRequestHandler(Socket socket, FoodServerCache cache) {
         this.socket = socket;
-
-        this.foodByNameCache = foodByNameCache;
-        this.foodByNdbnoCache = foodByNdbnoCache;
-        this.foodByUpcCache = foodByUpcCache;
+        this.cache = cache;
     }
 
     @Override
@@ -84,8 +72,10 @@ public class ClientRequestHandler implements Runnable {
         String queryType = userInput[0];
         String queryArg = userInput[1];
 
+        HttpClient client = HttpClient.newHttpClient();
+
         CommandFactory commandFactory = CommandFactory.getInstance();
-        AbstractCommand cmd = commandFactory.getCommand(queryType, foodByNameCache, foodByNdbnoCache, foodByUpcCache);
+        AbstractCommand cmd = commandFactory.getCommand(client, queryType, cache);
 
         if (cmd != null) {
             try {

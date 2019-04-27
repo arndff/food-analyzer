@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto;
+package bg.sofia.uni.fmi.mjt.foodanalyzer.server.entity;
 
 import java.util.Objects;
 

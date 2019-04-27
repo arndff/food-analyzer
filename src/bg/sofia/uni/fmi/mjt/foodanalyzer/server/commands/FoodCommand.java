@@ -1,22 +1,28 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.product.Product;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.product.ProductResponse;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class FoodCommand extends AbstractCommand {
-    FoodCommand(ConcurrentMap<String, List<Product>> foodByNameCache, ConcurrentMap<String, Product> foodByUpcCache) {
-        super(foodByNameCache, null, foodByUpcCache);
+    private ConcurrentMap<String, List<Product>> foodByNameCache;
+    private ConcurrentMap<String, Product> foodByUpcCache;
+
+    FoodCommand(HttpClient client, ConcurrentMap<String, List<Product>> foodByNameCache, ConcurrentMap<String, Product> foodByUpcCache) {
+        super(client);
+        this.foodByNameCache = foodByNameCache;
+        this.foodByUpcCache = foodByUpcCache;
     }
 
     @Override
@@ -30,21 +36,19 @@ public class FoodCommand extends AbstractCommand {
         }
 
         String url = API_URL + "/search/?q=" + argument + "&api_key=" + API_KEY;
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
 
         try {
-            JsonObject responseToJson = urlResponseToJson(url);
-            JsonElement listProperty = responseToJson.get("list");
+            Gson gson = new Gson();
 
-            if (listProperty == null) {
+            String response = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            ProductResponse productResponse = gson.fromJson(response, ProductResponse.class);
+
+            if (productResponse.getList() == null) {
                 throw new NoInformationFoundException("No information found for food=" + argument + ".");
             }
 
-            JsonArray items = listProperty.getAsJsonObject()
-                                          .get("item").getAsJsonArray();
-
-            Gson gson = new Gson();
-
-            List<Product> products = gson.fromJson(items, new TypeToken<List<Product>>() {}.getType());
+            List<Product> products = productResponse.getList().getItem();
             products.forEach(Product::setNameAndUpc);
 
             // Updating foodByNameCache

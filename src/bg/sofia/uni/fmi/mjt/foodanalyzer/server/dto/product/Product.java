@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto;
+package bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.product;
 
 import java.util.Objects;
 
@@ -17,7 +17,6 @@ public class Product {
         this.name = name;
         this.ndbno = ndbno;
         this.manu = manu;
-        setNameAndUpc();
     }
 
     public String getUpc() {
@@ -47,7 +46,7 @@ public class Product {
         if (upc != null) {
             result += ", upc: " + upc;
 
-            if (!this.manu.equals("none")) {
+            if (!"none".equals(manu)) {
                 result += ", manu: " + manu;
             }
         }

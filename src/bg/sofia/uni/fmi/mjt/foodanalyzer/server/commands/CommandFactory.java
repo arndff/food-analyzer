@@ -1,13 +1,10 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Report;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.FoodServerCache;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
+import java.net.http.HttpClient;
 
 public class CommandFactory {
-
     private static final String GET_FOOD = "get-food";
     private static final String GET_FOOD_REPORT = "get-food-report";
     private static final String GET_FOOD_BY_BARCODE = "get-food-by-barcode";
@@ -20,17 +17,14 @@ public class CommandFactory {
         return commandFactory;
     }
 
-    public AbstractCommand getCommand(String commandType,
-                                      ConcurrentMap<String, List<Product>> foodByNameCache,
-                                      ConcurrentMap<String, Report> foodByNdbnoCache,
-                                      ConcurrentMap<String, Product> foodByUpcCache) {
+    public AbstractCommand getCommand(HttpClient client, String commandType, FoodServerCache cache) {
         switch(commandType) {
             case GET_FOOD:
-                return new FoodCommand(foodByNameCache, foodByUpcCache);
+                return new FoodCommand(client, cache.getFoodByNameCache(), cache.getFoodByUpcCache());
             case GET_FOOD_REPORT:
-                return new FoodReportCommand(foodByNdbnoCache);
+                return new FoodReportCommand(client, cache.getFoodByNdbnoCache());
             case GET_FOOD_BY_BARCODE:
-                return new FoodByBarcodeCommand(foodByUpcCache);
+                return new FoodByBarcodeCommand(client, cache.getFoodByUpcCache());
             default:
                 return null;
         }

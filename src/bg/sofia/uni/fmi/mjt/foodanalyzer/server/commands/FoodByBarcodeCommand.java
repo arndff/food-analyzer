@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.product.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidBarcodeArgumentsException;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
 import com.google.zxing.BinaryBitmap;
@@ -16,12 +16,16 @@ import javax.imageio.ImageIO;
 
 import java.io.IOException;
 import java.io.File;
+import java.net.http.HttpClient;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 public class FoodByBarcodeCommand extends AbstractCommand {
-    FoodByBarcodeCommand(ConcurrentMap<String, Product> foodByUpcCache) {
-        super(null, null, foodByUpcCache);
+    private ConcurrentMap<String, Product> foodByUpcCache;
+
+    FoodByBarcodeCommand(HttpClient client, ConcurrentMap<String, Product> foodByUpcCache) {
+        super(client);
+        this.foodByUpcCache = foodByUpcCache;
     }
 
     private boolean validateQueryByBarcodeArg(String arg) {

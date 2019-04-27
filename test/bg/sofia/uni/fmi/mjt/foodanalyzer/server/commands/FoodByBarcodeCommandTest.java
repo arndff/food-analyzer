@@ -1,45 +1,30 @@
 package bg.sofia.uni.fmi.mjt.foodanalyzer.server.commands;
 
-import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.Product;
+import bg.sofia.uni.fmi.mjt.foodanalyzer.server.dto.product.Product;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.InvalidBarcodeArgumentsException;
 import bg.sofia.uni.fmi.mjt.foodanalyzer.server.exceptions.NoInformationFoundException;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FoodByBarcodeCommandTest {
-    private Product product = new Product("Branded Food Products Database",
-            "RAFFAELLO, ALMOND COCONUT TREAT, UPC: 009800146130",
-            "45142036",
-            "Ferrero U.S.A., Incorporated");
-
-    @Mock
-    ConcurrentMap<String, Product> foodByUpcCacheMock = new ConcurrentHashMap<>();
-
-    private FoodByBarcodeCommand foodByBarcodeCommand;
-
-    private String expected;
-    private String actual;
     private static final String ERROR = "Didn't get the expected result ";
+
+    private ConcurrentMap<String, Product> foodByUpcCache = new ConcurrentHashMap<>();
+    private FoodByBarcodeCommand foodByBarcodeCommand;
 
     @Before
     public void setup() {
-        foodByBarcodeCommand = new FoodByBarcodeCommand(foodByUpcCacheMock);
+        foodByBarcodeCommand = new FoodByBarcodeCommand(null, foodByUpcCache);
     }
 
     @Test(expected = InvalidBarcodeArgumentsException.class)
     public void testExecuteMethodWithInvalidBarcodeArgumentsException()
             throws InvalidBarcodeArgumentsException, NoInformationFoundException {
-
         foodByBarcodeCommand.execute("009800146130");
         // should be "--upc"
         // foodByBarcodeCommand.execute("--up=<009800146130>");
@@ -50,14 +35,12 @@ public class FoodByBarcodeCommandTest {
     @Test(expected = NoInformationFoundException.class)
     public void testProcessBarcodeWithNoInformationFoundException()
             throws InvalidBarcodeArgumentsException, NoInformationFoundException {
-
-        foodByBarcodeCommand.execute("--upc=<777777777777>");
+       foodByBarcodeCommand.execute("--upc=<777777777777>");
     }
 
     @Test(expected = InvalidBarcodeArgumentsException.class)
     public void testProcessBarcodeWithInvalidBarcodeArgumentException()
             throws InvalidBarcodeArgumentsException, NoInformationFoundException {
-
         foodByBarcodeCommand.execute("--img=</resources/barcode.gif");
     }
 
@@ -65,11 +48,16 @@ public class FoodByBarcodeCommandTest {
     public void testProcessBarcodeWithUpcCodeRegularCase()
             throws InvalidBarcodeArgumentsException, NoInformationFoundException {
 
-        when(foodByUpcCacheMock.containsKey(product.getUpc())).thenReturn(true);
-        when(foodByUpcCacheMock.get(product.getUpc())).thenReturn(product);
+        Product product = new Product("Branded Food Products Database",
+                "RAFFAELLO, ALMOND COCONUT TREAT, UPC: 009800146130",
+                "45142036",
+                "Ferrero U.S.A., Incorporated");
 
-        expected = product.toString();
-        actual = foodByBarcodeCommand.execute("--upc=<009800146130>");
+        product.setNameAndUpc();
+        foodByUpcCache.putIfAbsent(product.getUpc(), product);
+
+        String expected = product.toString();
+        String actual = foodByBarcodeCommand.execute("--upc=<009800146130>");
         // actual = foodByBarcodeCommand.execute("--upc=<009800146130>" + "|" + "--img</resources/raffaello_barcode.gif");
         assertEquals(ERROR + "after testing FoodByBarcodeCommand::processBarcode with --upc.", expected, actual);
     }
@@ -78,13 +66,19 @@ public class FoodByBarcodeCommandTest {
     public void testProcessBarcodeWithImgPathRegularCase()
             throws InvalidBarcodeArgumentsException, NoInformationFoundException {
 
-        when(foodByUpcCacheMock.containsKey(product.getUpc())).thenReturn(true);
-        when(foodByUpcCacheMock.get(product.getUpc())).thenReturn(product);
+        Product product = new Product("Branded Food Products Database",
+                "RAFFAELLO, ALMOND COCONUT TREAT, UPC: 009800146130",
+                "45142036",
+                "Ferrero U.S.A., Incorporated");
+
+        product.setNameAndUpc();
+        foodByUpcCache.put(product.getUpc(), product);
 
         String filePath = System.getProperty("user.dir") + "/resources/raffaello_barcode.gif";
 
-        expected = product.toString();
-        actual = foodByBarcodeCommand.execute("--img=<" + filePath + ">");
+        String expected = product.toString();
+        String actual = foodByBarcodeCommand.execute("--img=<" + filePath + ">");
         assertEquals(ERROR + "after testing FoodByBarcodeCommand::processBarcode with --img.", expected, actual);
     }
+
 }
