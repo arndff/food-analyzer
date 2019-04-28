@@ -81,7 +81,7 @@ public class FoodCommandTest {
         String argument = "raffaello";
         String actual = foodCommand.execute(argument);
 
-        assertEquals(ERROR + String.format(" after running FoodCommand::execute with argument=%s.", argument), expected, actual);
+        assertEquals(String.format("%s after running FoodCommand::execute with argument=%s.", ERROR, argument), expected, actual);
     }
 
     @Test
@@ -116,6 +116,6 @@ public class FoodCommandTest {
         String argument = "rogelio";
         String actual = foodCommand.execute(argument);
 
-        assertEquals(ERROR + String.format(" after running FoodCommand::execute with argument=%s.", argument), expected, actual);
+        assertEquals(String.format("%s after running FoodCommand::execute with argument=%s.", ERROR, argument), expected, actual);
     }
 }

@@ -79,6 +79,6 @@ public class FoodReportCommandTest {
         String expected = reportResponse.createReportObject().toString();
         String actual = foodReportCommand.execute(argument);
 
-        assertEquals(ERROR + "after running FoodReportCommand::execute with argument=45142036.", expected, actual);
+        assertEquals(String.format("%s after running FoodReportCommand::execute with argument=%s.", ERROR, argument), expected, actual);
     }
 }

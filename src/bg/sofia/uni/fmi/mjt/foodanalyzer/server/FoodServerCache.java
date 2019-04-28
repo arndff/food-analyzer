@@ -89,7 +89,7 @@ public class FoodServerCache {
             return cache;
         }
 
-        final String error = "Error occurred in FoodServer::loadCache.";
+        final String ERROR = "Error occurred in FoodServer::loadCache.";
 
         try (FileReader in = new FileReader(file)) {
             Gson gson = new Gson();
@@ -100,9 +100,9 @@ public class FoodServerCache {
             // Project's GSON version: 2.8.5
             cache = gson.fromJson(in, TypeToken.getParameterized(ConcurrentMap.class, String.class, myType).getType());
         } catch (FileNotFoundException e) {
-            logger.log(Level.WARNING, error + "(" + path + " not found)", e);
+            logger.log(Level.WARNING, String.format("%s (%s not found)", ERROR, path), e);
         } catch (IOException e) {
-            logger.log(Level.WARNING, error, e);
+            logger.log(Level.WARNING, ERROR, e);
         }
 
         return cache;

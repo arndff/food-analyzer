@@ -78,7 +78,7 @@ public class FoodByBarcodeCommandTest {
 
         String expected = product.toString();
         String actual = foodByBarcodeCommand.execute("--img=<" + filePath + ">");
-        assertEquals(ERROR + "after testing FoodByBarcodeCommand::processBarcode with --img.", expected, actual);
+        assertEquals(String.format("%s after testing FoodByBarcodeCommand::processBarcode with --img.", ERROR), expected, actual);
     }
 
 }
