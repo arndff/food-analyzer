@@ -89,7 +89,7 @@ public class FoodServerCache {
             return cache;
         }
 
-        final String ERROR = "Error occurred in FoodServer::loadCache.";
+        final String ERROR = "Error occurred in FoodServerCache::loadCache.";
 
         try (FileReader in = new FileReader(file)) {
             Gson gson = new Gson();
@@ -116,7 +116,7 @@ public class FoodServerCache {
             out.write(gson.toJson(cache));
         } catch (IOException e) {
             logger.log(Level.WARNING,
-                    String.format("Error occurred in FoodServer::saveCache. Cache argument: %s", path.split("/")[1]), e);
+                    String.format("Error occurred in FoodServerCache::saveCache. Cache argument: %s", path.split("/")[1]), e);
         }
     }
 }
